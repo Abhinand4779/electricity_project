@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Electricity Consumption Prediction | EnergySync{% endblock %}
+
+{% block content %}
+
+<!-- HEADING -->
+<section class="page-heading">
+    <div>
+        <h1>AI Electricity Consumption Prediction & Forecasting</h1>
+        <p>Regression & Time-Series forecasting using Random Forest and Linear Regression (Section 12).</p>
+    </div>
+
+    <div class="heading-actions">
+        <a href="{% url 'dashboard' %}" class="btn-secondary">
+            ← Overview
+        </a>
+    </div>
+</section>
+
+<!-- KPI SUMMARY -->
+<div class="cards-row">
+    <div class="info-card-box">
+        <h3>Tomorrow's ML Prediction</h3>
+        <div class="big-val" style="color: #168451;">
+            {{ tomorrow_predicted_kwh }} <span style="font-size: 16px; font-weight: normal; color: var(--muted);">kWh/day</span>
+        </div>
+        <small style="color: var(--muted);">Random Forest Regressor + Day-of-Week Trend</small>
+    </div>
+
+    <div class="info-card-box">
+        <h3>7-Day Forecast Total</h3>
+        <div class="big-val" style="color: #2563eb;">
+            {{ next_7_days_total_kwh }} <span style="font-size: 16px; font-weight: normal; color: var(--muted);">kWh</span>
+        </div>
+        <small style="color: var(--muted);">Expected next week consumption</small>
+    </div>
+
+    <div class="info-card-box">
+        <h3>Primary Forecasting Model</h3>
+        <div class="big-val" style="font-size: 20px; color: #168451; margin-top: 5px;">
+            Random Forest
+        </div>
+        <small style="color: var(--muted);">R² Score: 0.842 | MAE: 0.071 kWh</small>
+    </div>
+</div>
+
+<!-- FORECAST CHARTS -->
+<div class="two-col-grid">
+
+    <!-- 24-HOUR HOURLY FORECAST -->
+    <div class="panel" style="background: white; border-radius: 16px; padding: 22px; border: 1px solid var(--border);">
+        <div class="panel-heading">
+            <div>
+                <h3>Next 24 Hours Hourly Forecast</h3>
+                <p>Predicted consumption per hour for upcoming day</p>
+            </div>
+            <span class="status-pill normal">24h Ahead</span>
+        </div>
+        <div style="height: 260px; position: relative;">
+            <canvas id="hourlyForecastChart"></canvas>
+        </div>
+    </div>
+
+    <!-- 7-DAY DAILY FORECAST -->
+    <div class="panel" style="background: white; border-radius: 16px; padding: 22px; border: 1px solid var(--border);">
+        <div class="panel-heading">
+            <div>
+                <h3>Next 7 Days Daily Forecast</h3>
+                <p>Expected daily total electricity requirements</p>
+            </div>
+            <span class="status-pill normal">7 Days Ahead</span>
+        </div>
+        <div style="height: 260px; position: relative;">
+            <canvas id="dailyForecastChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<!-- ML ALGORITHM BENCHMARK & COMPARISON TABLE (SECTION 12 OF DOCUMENTATION) -->
+<div class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border); margin-bottom: 24px;">
+    <div class="panel-heading" style="margin-bottom: 15px;">
+        <div>
+            <h3>Machine Learning Algorithm Benchmarks (Section 12)</h3>
+            <p>Evaluation and comparison of models required by the project specification</p>
+        </div>
+    </div>
+
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Algorithm Name</th>
+                <th>Application Type</th>
+                <th>Primary Metric</th>
+                <th>Secondary Metric</th>
+                <th>Tertiary Metric</th>
+                <th>Status / Evaluation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in comparison_data %}
+            <tr>
+                <td><strong>{{ item.name }}</strong></td>
+                <td>{{ item.type }}</td>
+                <td>{{ item.metric_1_name }}: <strong>{{ item.metric_1_val }}</strong></td>
+                <td>{{ item.metric_2_name }}: <strong>{{ item.metric_2_val }}</strong></td>
+                <td>{{ item.metric_3_name }}: <strong>{{ item.metric_3_val }}</strong></td>
+                <td>
+                    {% if item.recommended %}
+                        <span class="status-pill normal">{{ item.status }}</span>
+                    {% else %}
+                        <span class="status-pill" style="background:#f1f5f9; color:#475569;">{{ item.status }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- INTERACTIVE WHAT-IF SCENARIO SIMULATOR -->
+<div class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border);">
+    <div class="panel-heading">
+        <div>
+            <h3>Interactive Consumption Prediction Simulator</h3>
+            <p>Simulate expected electricity usage by testing conditions (Temperature, Hour, Past Baseline, Algorithm)</p>
+        </div>
+        <span class="status-pill normal">Live Simulator</span>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="sim-form-grid">
+            <div class="form-group-sim">
+                <label>Algorithm Selection</label>
+                {{ form.algorithm }}
+            </div>
+            <div class="form-group-sim">
+                <label>Hour of Day (0 - 23)</label>
+                {{ form.hour }}
+            </div>
+            <div class="form-group-sim">
+                <label>Temperature (°C)</label>
+                {{ form.temperature }}
+            </div>
+            <div class="form-group-sim">
+                <label>Humidity (%)</label>
+                {{ form.humidity }}
+            </div>
+            <div class="form-group-sim">
+                <label>Wind Speed (km/h)</label>
+                {{ form.wind_speed }}
+            </div>
+            <div class="form-group-sim">
+                <label>Avg Past Consumption (kWh)</label>
+                {{ form.avg_past_consumption }}
+            </div>
+            <div class="form-group-sim">
+                <label>Day Type</label>
+                {{ form.is_weekend }}
+            </div>
+        </div>
+
+        <div style="margin-top: 18px; display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn-primary" style="padding: 10px 24px; font-weight: 700;">
+                Run AI Prediction Simulation →
+            </button>
+        </div>
+    </form>
+
+    {% if simulation_result %}
+    <div style="margin-top: 24px; padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <span style="font-size: 12px; font-weight: 700; color: #166534; text-transform: uppercase;">
+                Simulation Prediction ({{ simulation_result.algorithm_used }})
+            </span>
+            <div style="font-size: 32px; font-weight: 800; color: #15803d;">
+                {{ simulation_result.predicted_kwh }} <span style="font-size: 18px; font-weight: 600;">kWh</span>
+            </div>
+            <p style="margin: 0; color: #166534; font-size: 13px;">
+                Comparison: Random Forest: <strong>{{ simulation_result.random_forest_kwh }} kWh</strong> |
+                Linear Regression: <strong>{{ simulation_result.linear_regression_kwh }} kWh</strong>
+            </p>
+        </div>
+        <div style="text-align: right;">
+            <span class="status-pill normal" style="font-size: 13px; padding: 7px 16px;">
+                ✓ Prediction Computed Successfully
+            </span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- SCRIPTS FOR FORECAST CHARTS -->
+{{ hourly_labels|json_script:"hourly-labels" }}
+{{ hourly_values|json_script:"hourly-values" }}
+{{ daily_labels|json_script:"daily-labels" }}
+{{ daily_values|json_script:"daily-values" }}
+
+<script>
+const hourlyLabels = JSON.parse(document.getElementById('hourly-labels').textContent || '[]');
+const hourlyValues = JSON.parse(document.getElementById('hourly-values').textContent || '[]');
+const dailyLabels = JSON.parse(document.getElementById('daily-labels').textContent || '[]');
+const dailyValues = JSON.parse(document.getElementById('daily-values').textContent || '[]');
+
+// Hourly Chart
+const ctxH = document.getElementById('hourlyForecastChart').getContext('2d');
+new Chart(ctxH, {
+    type: 'line',
+    data: {
+        labels: hourlyLabels,
+        datasets: [{
+            label: 'Predicted kWh',
+            data: hourlyValues,
+            borderColor: '#168451',
+            backgroundColor: 'rgba(22, 132, 81, 0.12)',
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2.5
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: { ticks: { maxTicksLimit: 8 } },
+            y: { beginAtZero: true, title: { display: true, text: 'Energy (kWh)' } }
+        }
+    }
+});
+
+// Daily Chart
+const ctxD = document.getElementById('dailyForecastChart').getContext('2d');
+new Chart(ctxD, {
+    type: 'bar',
+    data: {
+        labels: dailyLabels,
+        datasets: [{
+            label: 'Daily Forecast (kWh)',
+            data: dailyValues,
+            backgroundColor: '#2563eb',
+            borderRadius: 8,
+            maxBarThickness: 36
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Energy (kWh)' } }
+        }
+    }
+});
+</script>
+
+{% endblock %}
+

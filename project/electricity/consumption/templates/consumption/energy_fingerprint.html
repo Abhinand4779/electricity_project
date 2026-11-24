@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Personal Energy Fingerprint & DNA Profile - EnergySync{% endblock %}
+
+{% block content %}
+<div class="page-container" style="padding: 10px 0;">
+
+    <!-- TOP HEADER -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <h1 style="margin: 0; font-size: 1.85rem; font-weight: 700;">🪪 Personal Energy Fingerprint</h1>
+                <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #9333ea; border: 1px solid rgba(168, 85, 247, 0.3); font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                    Feature 05 (Behavioral AI)
+                </span>
+            </div>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">
+                Your unique household behavioral energy DNA. Learns your diurnal routines, baseload discipline, weekend elasticity, and climate sensitivity.
+            </p>
+        </div>
+
+        <div>
+            <span style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
+                <span>🧬</span> Energy DNA Score: {{ fingerprint.fingerprint_score }}/100
+            </span>
+        </div>
+    </div>
+
+    <!-- ARCHETYPE BANNER -->
+    <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(16, 185, 129, 0.08)); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div style="max-width: 680px;">
+            <div style="display: inline-block; background: #9333ea; color: #fff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; letter-spacing: 0.5px;">
+                Detected Behavioral Archetype
+            </div>
+            <h2 style="margin: 0 0 8px 0; font-size: 1.5rem; color: var(--text); font-weight: 700;">
+                {{ fingerprint.archetype_badge }} ({{ fingerprint.archetype_name }})
+            </h2>
+            <p style="margin: 0; color: var(--text); opacity: 0.85; font-size: 0.92rem; line-height: 1.55;">
+                {{ fingerprint.archetype_description }}
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 16px; text-align: center;">
+            <div style="background: var(--white); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                <div style="font-size: 1.4rem; font-weight: 700; color: #10b981;">{{ fingerprint.total_analyzed_hours }}</div>
+                <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 600;">Hours Analyzed</div>
+            </div>
+            <div style="background: var(--white); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                <div style="font-size: 1.4rem; font-weight: 700; color: #0284c7;">{{ fingerprint.average_kwh_per_hour }}</div>
+                <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 600;">Avg kWh / Hr</div>
+            </div>
+            <div style="background: var(--white); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;">{{ fingerprint.idle_floor_kwh }}</div>
+                <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 600;">Idle Floor (kWh)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN TWO COLUMN: RADAR CHART & BEHAVIORAL TRAITS -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+
+        <!-- LEFT: 5-DIMENSION RADAR CHART -->
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+                    <span>🕸️</span> Behavioral Fingerprint Radar
+                </h3>
+                <span style="font-size: 0.75rem; color: var(--muted);">5-Axis Energy DNA</span>
+            </div>
+
+            <div style="position: relative; height: 360px; width: 100%;">
+                <canvas id="fingerprintRadarChart"></canvas>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 20px; font-size: 0.8rem; margin-top: 14px; color: var(--muted);">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 10px; height: 10px; background: #9333ea; border-radius: 50%;"></span> Your Household
+                </span>
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 10px; height: 10px; background: #64748b; border-radius: 50%;"></span> Peer Benchmark
+                </span>
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 10px; height: 10px; background: #10b981; border-radius: 50%;"></span> Ideal Target
+                </span>
+            </div>
+        </div>
+
+        <!-- RIGHT: 5 TRAIT METRICS -->
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <h3 style="margin-top: 0; margin-bottom: 6px; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+                <span>🧬</span> Core Behavioral Traits Breakdown
+            </h3>
+            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px;">
+                Each dimension represents a key operational characteristic extracted by Machine Learning.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                {% for trait in fingerprint.traits %}
+                <div style="background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border); padding: 14px 16px; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-weight: 600; font-size: 0.9rem; color: var(--text);">{{ trait.name }}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 0.85rem; font-weight: 700; color: #0284c7;">{{ trait.value }}</span>
+                            <span style="font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: {% if trait.score >= 65 %}rgba(16, 185, 129, 0.15){% else %}rgba(245, 158, 11, 0.15){% endif %}; color: {% if trait.score >= 65 %}#10b981{% else %}#f59e0b{% endif %}; font-weight: 600;">
+                                {{ trait.status }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Progress bar for trait score -->
+                    <div style="height: 6px; background: rgba(0, 0, 0, 0.08); border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: {{ trait.score }}%; background: {% if trait.score >= 65 %}#10b981{% elif trait.score >= 45 %}#f59e0b{% else %}#ef4444{% endif %}; border-radius: 3px;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- ACTION RECOMMENDATION LINK -->
+            <div style="margin-top: 20px; text-align: right;">
+                <a href="{% url 'recommendations' %}" class="btn" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; text-decoration: none;">
+                    💡 View Tailored Recommendations →
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- CHART.JS RADAR INTEGRATION -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const radarLabels = {{ radar_labels_json|safe }};
+    const userRadar = {{ user_radar_json|safe }};
+    const benchmarkRadar = {{ benchmark_radar_json|safe }};
+    const idealRadar = {{ ideal_radar_json|safe }};
+
+    const ctx = document.getElementById('fingerprintRadarChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: radarLabels,
+            datasets: [
+                {
+                    label: 'Your Household',
+                    data: userRadar,
+                    borderColor: '#9333ea',
+                    backgroundColor: 'rgba(147, 51, 234, 0.2)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#9333ea',
+                    pointRadius: 4
+                },
+                {
+                    label: 'Peer Benchmark',
+                    data: benchmarkRadar,
+                    borderColor: '#64748b',
+                    backgroundColor: 'rgba(100, 116, 139, 0.1)',
+                    borderWidth: 1.5,
+                    borderDash: [4, 4],
+                    pointRadius: 2
+                },
+                {
+                    label: 'Ideal Target',
+                    data: idealRadar,
+                    borderColor: '#10b981',
+                    backgroundColor: 'transparent',
+                    borderWidth: 1.5,
+                    borderDash: [2, 2],
+                    pointRadius: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(100, 116, 139, 0.2)' },
+                    grid: { color: 'rgba(100, 116, 139, 0.15)' },
+                    pointLabels: {
+                        color: '#64748b',
+                        font: { size: 11, weight: '600' }
+                    },
+                    ticks: {
+                        backdropColor: 'transparent',
+                        color: '#64748b',
+                        stepSize: 20
+                    },
+                    suggestedMin: 0,
+                    suggestedMax: 100
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,267 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Electricity Usage | EnergySync{% endblock %}
+
+{% block content %}
+
+<div class="energy-entry-page">
+
+    <div class="entry-heading">
+        <div>
+            <span class="entry-tag">ENERGYSYNC / MANUAL ENTRY</span>
+            <h1>Add Electricity Usage</h1>
+            <p>Record your electricity consumption and keep track of your energy usage.</p>
+        </div>
+
+        <div class="heading-icon">⚡</div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="entry-message">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="entry-layout">
+
+        <div class="entry-card">
+
+            <div class="card-heading">
+                <div class="card-icon">✎</div>
+                <div>
+                    <h2>Consumption Details</h2>
+                    <p>Enter your electricity usage information below.</p>
+                </div>
+            </div>
+
+            <form method="POST" id="consumptionForm">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="entry-errors">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="entry-field">
+                    <label for="{{ form.recorded_at.id_for_label }}">
+                        <span>📅</span> Recording Date & Time
+                    </label>
+
+                    {{ form.recorded_at }}
+
+                    {% for error in form.recorded_at.errors %}
+                        <small class="entry-errors">{{ error }}</small>
+                    {% endfor %}
+
+                    <small class="field-hint">
+                        Select when the electricity consumption was recorded.
+                    </small>
+                </div>
+
+                <div class="entry-field">
+                    <label for="{{ form.energy_kwh.id_for_label }}">
+                        <span>⚡</span> Electricity Consumption
+                    </label>
+
+                    <div class="energy-input-wrap">
+                        {{ form.energy_kwh }}
+                        <span class="unit-label">kWh</span>
+                    </div>
+
+                    {% for error in form.energy_kwh.errors %}
+                        <small class="entry-errors">{{ error }}</small>
+                    {% endfor %}
+
+                    <small class="field-hint">
+                        Enter the electricity consumed in kilowatt-hours.
+                    </small>
+                </div>
+
+                <div class="entry-field">
+                    <label for="{{ form.temperature.id_for_label }}">
+                        <span>🌡️</span> Temperature
+                        <span class="optional-label">Optional</span>
+                    </label>
+
+                    <div class="energy-input-wrap">
+                        {{ form.temperature }}
+                        <span class="unit-label">°C</span>
+                    </div>
+
+                    {% for error in form.temperature.errors %}
+                        <small class="entry-errors">{{ error }}</small>
+                    {% endfor %}
+
+                    <small class="field-hint">
+                        Enter the surrounding temperature if available.
+                    </small>
+                </div>
+
+<!-- HUMIDITY FIELD -->
+<div class="entry-field">
+    <label for="{{ form.humidity.id_for_label }}">
+        <span>💧</span> Humidity
+        <span class="optional-label">Optional</span>
+    </label>
+
+    <div class="energy-input-wrap">
+        {{ form.humidity }}
+        <span class="unit-label">%</span>
+    </div>
+
+    {% for error in form.humidity.errors %}
+        <small class="entry-errors">{{ error }}</small>
+    {% endfor %}
+
+    <small class="field-hint">
+        Enter relative humidity if available.
+    </small>
+</div>
+
+<!-- WIND SPEED FIELD -->
+<div class="entry-field">
+    <label for="{{ form.wind_speed.id_for_label }}">
+        <span>🌬️</span> Wind Speed
+        <span class="optional-label">Optional</span>
+    </label>
+
+    {{ form.wind_speed }}
+
+    {% for error in form.wind_speed.errors %}
+        <small class="entry-errors">{{ error }}</small>
+    {% endfor %}
+
+    <small class="field-hint">
+        Enter wind speed if available.
+    </small>
+</div>
+
+<!-- AVERAGE PAST CONSUMPTION FIELD -->
+<div class="entry-field">
+    <label for="{{ form.avg_past_consumption.id_for_label }}">
+        <span>📊</span> Average Past Consumption
+        <span class="optional-label">Optional</span>
+    </label>
+
+    {{ form.avg_past_consumption }}
+
+    {% for error in form.avg_past_consumption.errors %}
+        <small class="entry-errors">{{ error }}</small>
+    {% endfor %}
+
+    <small class="field-hint">
+        Enter your historical average consumption.
+    </small>
+</div>
+
+                <div class="entry-preview">
+                    <div>
+                        <span class="preview-label">YOUR RECORDED USAGE</span>
+                        <h3 id="liveConsumption">0.000 <span>kWh</span></h3>
+                        <p id="usageMessage">Enter a value to see your usage preview.</p>
+                    </div>
+                    <div class="preview-icon">⚡</div>
+                </div>
+
+                <div class="entry-actions">
+                    <button type="submit" class="save-entry-btn" id="saveButton">
+                        <span>✓</span> Save Consumption
+                    </button>
+
+                    <a href="{% url 'dashboard' %}" class="cancel-entry-btn">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+
+        <aside class="entry-sidebar">
+
+            <div class="tip-card">
+                <div class="tip-icon">💡</div>
+                <h3>Energy Tracking Tip</h3>
+                <p>
+                    Record your electricity usage regularly. Consistent
+                    data helps EnergySync understand your consumption
+                    patterns and make better predictions.
+                </p>
+            </div>
+
+            <div class="info-card">
+                <h3>Why record manually?</h3>
+
+                <div class="info-item">
+                    <span>📊</span>
+                    <div>
+                        <strong>Track usage</strong>
+                        <p>Maintain your electricity history.</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span>🤖</span>
+                    <div>
+                        <strong>AI predictions</strong>
+                        <p>Build historical data for future predictions.</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span>🌱</span>
+                    <div>
+                        <strong>Save energy</strong>
+                        <p>Understand your consumption patterns.</p>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const energyInput = document.getElementById("{{ form.energy_kwh.id_for_label }}");
+    const liveConsumption = document.getElementById("liveConsumption");
+    const usageMessage = document.getElementById("usageMessage");
+    const saveButton = document.getElementById("saveButton");
+    const form = document.getElementById("consumptionForm");
+
+    function updatePreview() {
+        const value = parseFloat(energyInput.value);
+
+        if (!energyInput.value || isNaN(value)) {
+            liveConsumption.innerHTML = '0.000 <span>kWh</span>';
+            usageMessage.textContent = "Enter a value to see your usage preview.";
+            return;
+        }
+
+        liveConsumption.innerHTML =
+            Math.max(0, value).toFixed(3) + ' <span>kWh</span>';
+
+        usageMessage.textContent =
+            value < 0 ? "Consumption cannot be negative." :
+            "Your consumption value is ready to save.";
+    }
+
+    energyInput.addEventListener("input", updatePreview);
+
+    form.addEventListener("submit", function () {
+        if (form.checkValidity()) {
+            saveButton.innerHTML = "Saving your data...";
+            saveButton.style.opacity = "0.8";
+        }
+    });
+
+    updatePreview();
+});
+</script>
+
+{% endblock %}

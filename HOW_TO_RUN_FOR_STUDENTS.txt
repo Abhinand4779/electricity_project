@@ -1,0 +1,130 @@
+================================================================================
+ENERGY SYNC — AI-POWERED PERSONAL ENERGY WASTE PREDICTOR & MANAGEMENT PLATFORM
+FINAL YEAR BCA / B.SC / B.TECH CAPSTONE PROJECT HANDOVER GUIDE FOR STUDENTS
+================================================================================
+
+Dear Students,
+
+This package contains the complete, tested, and fully working source code,
+machine learning models, database, and viva voce examination materials for the
+"AI-Powered Personal Energy Waste Predictor" project (EnergySync).
+
+--------------------------------------------------------------------------------
+1. QUICK START GUIDE (HOW TO RUN IN 3 MINUTES)
+--------------------------------------------------------------------------------
+
+Prerequisites:
+- Python 3.10, 3.11, or 3.12 installed on your computer.
+- Python should be added to your system PATH.
+
+Step 1: Open Terminal / Command Prompt / PowerShell
+Navigate into the "project/electricity" directory:
+   cd project\electricity
+
+Step 2: Install Required Libraries (Run once)
+   pip install -r requirements.txt
+
+   (Alternative manual command: pip install django pandas numpy scikit-learn reportlab)
+
+Step 3: Start the Django Development Server
+   python manage.py runserver
+
+   If port 8000 is occupied on your computer, run:
+   python manage.py runserver 127.0.0.1:8080
+
+Step 4: Open in Web Browser
+   Go to: http://127.0.0.1:8000/ (or http://127.0.0.1:8080/)
+
+--------------------------------------------------------------------------------
+2. PRE-CONFIGURED LOGIN CREDENTIALS
+--------------------------------------------------------------------------------
+
+The database already contains real user data, smart meter records, anomalies,
+and ML predictions. You can log in using either account:
+
+Account 1 (Administrator / Examiner Account):
+   Username: hp
+   Password: admin123
+
+Account 2 (Student / Demo Consumer Account):
+   Username: demo_user
+   Password: demo1234
+
+Django Admin Panel (Database inspection):
+   URL: http://127.0.0.1:8000/admin/
+   Username: hp
+   Password: admin123
+
+--------------------------------------------------------------------------------
+3. PROJECT STRUCTURE & IMPORTANT FILES
+--------------------------------------------------------------------------------
+
+project/electricity/
+  ├── manage.py                    # Django management script
+  ├── db.sqlite3                   # Preloaded database (users, records, anomalies)
+  ├── requirements.txt             # Python package dependencies
+  ├── datasets/                    # UCI & Kaggle Smart Meter datasets
+  │    ├── smart_meter_data.csv
+  │    └── household_hourly_consumption.csv
+  ├── electricity/                 # Project configuration
+  │    ├── settings.py             # App settings, DB config, static files
+  │    └── urls.py                 # Main URL routing
+  └── consumption/                 # Core Application
+       ├── models.py               # 6 Relational database models
+       ├── views.py                # 13 View controllers
+       ├── urls.py                 # App URL patterns (14 routes)
+       ├── ml_service.py           # ML regression & Isolation Forest anomaly models
+       ├── advanced_features.py    # 7 Next-Gen features (Digital Twin, XAI, etc.)
+       ├── preprocessing.py        # Data pipeline & 1-click UCI importer
+       ├── waste_analysis.py       # Standby, baseload, and peak waste analytics
+       ├── efficiency_score.py     # Dynamic 0-100 energy efficiency rating
+       ├── recommendations.py      # Recommendations & ToD appliance schedule
+       ├── templates/              # 11 HTML5 templates (with light/dark theme)
+       └── static/                 # CSS Design System & JavaScript assets
+
+Academic & Viva Voce Documents (In Root Folder):
+  ├── AI_Energy_Waste_Predictor_Final_Year_Project_Viva_Guide.pdf
+  │    (Comprehensive 9-page guide covering all 8 core modules, ML math, and QA)
+  ├── Beginner_Friendly_AI_Energy_Project_Viva_Guide.pdf
+  │    (5-page easy Q&A for fundamental ML concepts: What is ML, Random Forest, etc.)
+  ├── ADVANCED_AI_FEATURES_VIVA_GUIDE.md
+  │    (Technical defense guide covering the 7 Next-Gen innovative AI features)
+  ├── BCA_Project_Presentation_Model.pptx
+  │    (University presentation slide deck model)
+  └── Project_Documentation_Academic_PDF.pdf
+       (Original system requirements, architecture, and module breakdown)
+
+--------------------------------------------------------------------------------
+4. HOW TO DEMO THIS TO EXAMINERS (STEP-BY-STEP)
+--------------------------------------------------------------------------------
+
+1. Start on the Dashboard (http://127.0.0.1:8000/):
+   Show the total consumption, the 0-100 Energy Efficiency Score gauge, and
+   tomorrow's AI consumption forecast.
+
+2. Demonstrate 1-Click Data Import:
+   Go to "Import Dataset" and click "Load Sample Household Data (UCI Dataset)".
+   Explain to examiners that this ingests 168+ real smart meter records and runs
+   the automated cleaning and anomaly scanning pipeline.
+
+3. Showcase the 7 Next-Gen AI Innovations (The "Differentiators"):
+   - Digital Twin & What-If (/digital-twin/):
+     Adjust the Solar slider to 3 kW or toggle "EV Night Charging" to see the
+     24-hour diurnal curve and financial savings recalculate in real-time.
+   - Waste Detective & XAI (/waste-detective/):
+     Show how the Explainable AI (XAI) feature attribution tree disaggregates
+     anomalous spikes into specific appliance culprits (AC thermostat bypass,
+     water heater left on, vampire standby cluster).
+   - Personal Energy Fingerprint (/energy-fingerprint/):
+     Show the 5-axis Radar chart and the behavioral archetype classification badge.
+   - Self-Learning Recommendations (/recommendations/):
+     Click "👍 Helpful" or "✕ Not Feasible" to show examiners the reinforcement
+     feedback loop adjusting priority weights and the AI Calibration Score.
+
+4. Demonstrate Responsive Design:
+   Show examiners the dark/light mode toggle (top-right moon icon) and resize
+   the browser window to show the mobile off-canvas drawer navigation.
+
+Best of luck with your final year project demonstration and viva voce!
+================================================================================
+

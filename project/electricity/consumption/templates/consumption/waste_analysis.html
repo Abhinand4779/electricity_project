@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Energy Waste Analysis | EnergySync{% endblock %}
+
+{% block content %}
+
+<!-- HEADING -->
+<section class="page-heading">
+    <div>
+        <h1>Energy Waste Analysis & Loss Estimation</h1>
+        <p>Detailed evaluation of inefficient consumption patterns, standby power loss, and surge wastage (Module 6).</p>
+    </div>
+
+    <div class="heading-actions">
+        <a href="{% url 'recommendations' %}" class="btn-primary">
+            💡 View Recommendations
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn-secondary">
+            ← Overview
+        </a>
+    </div>
+</section>
+
+<!-- KPI SUMMARY -->
+<div class="cards-row">
+    <div class="info-card-box">
+        <h3>Estimated Wastage</h3>
+        <div class="big-val" style="color: #dc2626;">
+            {{ waste.estimated_waste_kwh }} <span style="font-size: 16px; font-weight: normal; color: var(--muted);">kWh</span>
+        </div>
+        <small style="color: var(--muted);">{{ waste.waste_percentage }}% of {{ waste.total_consumption }} kWh total usage</small>
+    </div>
+
+    <div class="info-card-box">
+        <h3>Financial Loss</h3>
+        <div class="big-val" style="color: #ea580c;">
+            ₹{{ waste.financial_waste }}
+        </div>
+        <small style="color: var(--muted);">Calculated at tariff rate of ₹{{ waste.tariff_rate }}/kWh</small>
+    </div>
+
+    <div class="info-card-box">
+        <h3>Carbon Footprint Wasted</h3>
+        <div class="big-val" style="color: #4b5563;">
+            {{ waste.carbon_waste_kg }} <span style="font-size: 16px; font-weight: normal; color: var(--muted);">kg CO₂e</span>
+        </div>
+        <small style="color: var(--muted);">Grid carbon factor: 0.82 kg CO₂e/kWh</small>
+    </div>
+
+    <div class="info-card-box">
+        <h3>Inefficiency Severity</h3>
+        <div class="big-val" style="font-size: 20px; color: {% if waste.waste_percentage > 30 %}#dc2626{% elif waste.waste_percentage > 15 %}#d97706{% else %}#168451{% endif %}; margin-top: 6px;">
+            {{ waste.severity }}
+        </div>
+        <small style="color: var(--muted);">Based on standard household efficiency metrics</small>
+    </div>
+</div>
+
+<!-- 3 WASTE MECHANISM BREAKDOWNS & PERIOD BREAKDOWN CHART -->
+<div class="two-col-grid">
+
+    <!-- WASTE SOURCES BREAKDOWN -->
+    <div class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border);">
+        <div class="panel-heading" style="margin-bottom: 20px;">
+            <div>
+                <h3>Sources of Energy Wastage</h3>
+                <p>Categorization of loss identified by AI pattern analysis</p>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+
+            <!-- Standby / Baseload -->
+            <div style="padding: 16px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <strong style="color: #1e293b; font-size: 15px;">1. Standby & Baseload Night Waste</strong>
+                    <span style="font-weight: 800; color: #2563eb;">{{ waste.baseload_waste_kwh }} kWh</span>
+                </div>
+                <p style="margin: 0; color: #64748b; font-size: 12.5px;">
+                    Excessive idle consumption recorded during midnight hours (12:00 AM – 05:59 AM) exceeding baseline vampire load.
+                </p>
+            </div>
+
+            <!-- Peak Spikes -->
+            <div style="padding: 16px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #f59e0b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <strong style="color: #1e293b; font-size: 15px;">2. Peak Evening Spikes & Surge Loss</strong>
+                    <span style="font-weight: 800; color: #d97706;">{{ waste.peak_waste_kwh }} kWh</span>
+                </div>
+                <p style="margin: 0; color: #64748b; font-size: 12.5px;">
+                    High-demand spikes occurring between 6:00 PM – 10:00 PM when household concurrent loads peak simultaneously.
+                </p>
+            </div>
+
+            <!-- Anomaly Driven -->
+            <div style="padding: 16px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #ef4444;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <strong style="color: #1e293b; font-size: 15px;">3. Anomaly-Driven Excessive Consumption</strong>
+                    <span style="font-weight: 800; color: #dc2626;">{{ waste.anomaly_waste_kwh }} kWh</span>
+                </div>
+                <p style="margin: 0; color: #64748b; font-size: 12.5px;">
+                    Atypical energy usage flagged by Isolation Forest models exceeding standard deviation expectations.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PERIOD BREAKDOWN CHART -->
+    <div class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border);">
+        <div class="panel-heading">
+            <div>
+                <h3>Consumption By Period</h3>
+                <p>Distribution across operational time windows</p>
+            </div>
+        </div>
+
+        <div style="height: 250px; position: relative;">
+            <canvas id="periodChart"></canvas>
+        </div>
+
+        <div class="two-col-grid-sm">
+            <div style="font-size: 12.5px; color: #64748b;">
+                🌙 Night: <strong>{{ waste.period_breakdown.Night }} kWh</strong>
+            </div>
+            <div style="font-size: 12.5px; color: #64748b;">
+                🌅 Morning: <strong>{{ waste.period_breakdown.Morning }} kWh</strong>
+            </div>
+            <div style="font-size: 12.5px; color: #64748b;">
+                ☀️ Afternoon: <strong>{{ waste.period_breakdown.Afternoon }} kWh</strong>
+            </div>
+            <div style="font-size: 12.5px; color: #64748b;">
+                🌆 Evening: <strong>{{ waste.period_breakdown.Evening }} kWh</strong>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- SERIALIZED DATA -->
+{{ period_labels|json_script:"period-labels" }}
+{{ period_values|json_script:"period-values" }}
+
+<script>
+const periodLabels = JSON.parse(document.getElementById('period-labels').textContent || '[]');
+const periodValues = JSON.parse(document.getElementById('period-values').textContent || '[]');
+
+const ctxP = document.getElementById('periodChart').getContext('2d');
+new Chart(ctxP, {
+    type: 'doughnut',
+    data: {
+        labels: periodLabels,
+        datasets: [{
+            data: periodValues,
+            backgroundColor: ['#38bdf8', '#fbbf24', '#f97316', '#ef4444'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+</script>
+
+{% endblock %}
+

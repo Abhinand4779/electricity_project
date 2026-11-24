@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Energy Digital Twin & What-If Simulator - EnergySync{% endblock %}
+
+{% block content %}
+<div class="page-container" style="padding: 10px 0;">
+
+    <!-- TOP HEADER -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <h1 style="margin: 0; font-size: 1.85rem; font-weight: 700;">🧬 AI Energy Digital Twin</h1>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                    Features 01, 03 & 06
+                </span>
+            </div>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">
+                A virtual software twin of your home. Simulate future electricity usage, test lifestyle changes, and compare what-if scenarios before spending money.
+            </p>
+        </div>
+
+        <!-- QUICK PRESET BUTTONS -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn" onclick="applyPreset('solar')" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600;">
+                ☀️ 3kW Solar Rooftop
+            </button>
+            <button type="button" class="btn" onclick="applyPreset('ev')" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600;">
+                🚗 EV Night Charging
+            </button>
+            <button type="button" class="btn" onclick="applyPreset('eco')" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600;">
+                🌿 Ultra Eco-Miser
+            </button>
+            <a href="{% url 'digital_twin' %}" class="btn" style="background: rgba(100, 116, 139, 0.12); color: var(--muted); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">
+                ↺ Reset
+            </a>
+        </div>
+    </div>
+
+    <!-- SUMMARY METRIC CARDS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <!-- Card 1 -->
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Monthly Grid Draw</span>
+                <span style="font-size: 1.2rem;">⚡</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 1.6rem; font-weight: 700; color: #10b981;">{{ twin_data.monthly_simulated_kwh }}</span>
+                <span style="font-size: 0.85rem; color: var(--muted);">kWh</span>
+            </div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: {% if twin_data.monthly_kwh_delta >= 0 %}#10b981{% else %}#ef4444{% endif %}; font-weight: 600;">
+                {% if twin_data.monthly_kwh_delta >= 0 %}
+                    ↓ {{ twin_data.monthly_kwh_delta }} kWh saved vs baseline ({{ twin_data.monthly_baseline_kwh }} kWh)
+                {% else %}
+                    ↑ +{{ twin_data.monthly_kwh_delta|stringformat:".2f"|slice:"1:" }} kWh added (EV load)
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Estimated Monthly Bill</span>
+                <span style="font-size: 1.2rem;">💰</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 1.6rem; font-weight: 700; color: #0284c7;">₹{{ twin_data.monthly_simulated_cost }}</span>
+                <span style="font-size: 0.85rem; color: var(--muted);">/ month</span>
+            </div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: {% if twin_data.monthly_cost_savings >= 0 %}#10b981{% else %}#ef4444{% endif %}; font-weight: 600;">
+                {% if twin_data.monthly_cost_savings >= 0 %}
+                    ↓ Saves ₹{{ twin_data.monthly_cost_savings }}/mo (Baseline: ₹{{ twin_data.monthly_baseline_cost }})
+                {% else %}
+                    ↑ Cost adjustment with EV
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Annual Savings</span>
+                <span style="font-size: 1.2rem;">📈</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 1.6rem; font-weight: 700; color: #f59e0b;">₹{{ twin_data.annual_cost_savings }}</span>
+                <span style="font-size: 0.85rem; color: var(--muted);">/ year</span>
+            </div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--muted);">
+                {% if twin_data.payback_years %}
+                    Payback: <strong style="color: #10b981;">~{{ twin_data.payback_years }} yrs</strong> (Capex ₹{{ twin_data.approx_capex }})
+                {% else %}
+                    Pure behavioral & efficiency saving
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">CO2 Footprint Offset</span>
+                <span style="font-size: 1.2rem;">🌱</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 1.6rem; font-weight: 700; color: #10b981;">{{ twin_data.annual_carbon_reduced_kg }}</span>
+                <span style="font-size: 0.85rem; color: var(--muted);">kg / year</span>
+            </div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--muted);">
+                Equal to planting ~{{ twin_data.annual_carbon_reduced_kg|floatformat:0 }} saplings
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN TWO-COLUMN SECTION -->
+    <div style="display: grid; grid-template-columns: 350px 1fr; gap: 24px; align-items: start;">
+
+        <!-- LEFT COLUMN: CONTROLS & WHAT-IF PARAMETERS -->
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <h3 style="margin-top: 0; margin-bottom: 4px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+                <span>⚙️</span> Simulator Parameters
+            </h3>
+            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px;">
+                Toggle interventions to recalculate your digital twin's 24-hour load curve in real time.
+            </p>
+
+            <form id="simulatorForm" method="GET" action="{% url 'digital_twin' %}">
+
+                <!-- 1. Solar Rooftop Capacity -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px;">
+                        <span>☀️ Rooftop Solar System</span>
+                        <span id="solarKwDisplay" style="color: #f59e0b; font-weight: 700;">{{ twin_data.params.solar_kw }} kW</span>
+                    </label>
+                    <input type="range" name="solar_kw" id="solarKwInput" min="0" max="5" step="0.5"
+                           value="{{ twin_data.params.solar_kw }}"
+                           style="width: 100%; accent-color: #f59e0b;"
+                           oninput="document.getElementById('solarKwDisplay').innerText = this.value + ' kW'">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px;">
+                        <span>None (0kW)</span>
+                        <span>2 kW</span>
+                        <span>3 kW</span>
+                        <span>5 kW Max</span>
+                    </div>
+                </div>
+
+                <!-- 2. Electric Vehicle Commuter Charging -->
+                <div style="margin-bottom: 20px; padding: 14px; background: rgba(139, 92, 246, 0.06); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label for="hasEvToggle" style="font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <span>🚗</span> Electric Vehicle (EV)
+                        </label>
+                        <input type="checkbox" name="has_ev" id="hasEvToggle" value="1"
+                               {% if twin_data.params.has_ev %}checked{% endif %}
+                               style="width: 18px; height: 18px; accent-color: #8b5cf6;">
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--muted); margin-bottom: 8px;">
+                        3.3 kW Level-2 charger (4 hours = 13.2 kWh/day)
+                    </div>
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px;">Charging Window:</label>
+                        <select name="ev_charging_window" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 6px; font-size: 0.85rem;">
+                            <option value="night" {% if twin_data.params.ev_charging_window == 'night' %}selected{% endif %}>🌙 Overnight Off-Peak (23:00 - 03:00)</option>
+                            <option value="evening" {% if twin_data.params.ev_charging_window == 'evening' %}selected{% endif %}>🌆 Evening Peak Hours (18:00 - 22:00)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 3. Inverter AC Upgrade -->
+                <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <label for="acUpgradeToggle" style="font-weight: 600; font-size: 0.9rem; cursor: pointer; display: block;">
+                            ❄️ 5-Star Inverter AC
+                        </label>
+                        <span style="font-size: 0.78rem; color: var(--muted);">Upgrades fixed compressor (-35% cooling energy)</span>
+                    </div>
+                    <input type="checkbox" name="ac_upgrade" id="acUpgradeToggle" value="1"
+                           {% if twin_data.params.ac_upgrade %}checked{% endif %}
+                           style="width: 18px; height: 18px; accent-color: #10b981;">
+                </div>
+
+                <!-- 4. AC Thermostat Setpoint Shift -->
+                <div style="margin-bottom: 16px;">
+                    <label style="font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 6px;">
+                        🌡️ AC Thermostat Adjustment
+                    </label>
+                    <select name="temp_setpoint_shift" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 6px; font-size: 0.85rem;">
+                        <option value="0" {% if twin_data.params.temp_setpoint_shift == 0 %}selected{% endif %}>Current Temp (21°C - 22°C baseline)</option>
+                        <option value="1" {% if twin_data.params.temp_setpoint_shift == 1 %}selected{% endif %}>+1°C Warmer (~6% cooling reduction)</option>
+                        <option value="2" {% if twin_data.params.temp_setpoint_shift == 2 %}selected{% endif %}>+2°C Eco Optimum 24°C (~12% reduction)</option>
+                    </select>
+                </div>
+
+                <!-- 5. Shift Heavy Loads -->
+                <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <label for="shiftHeavyToggle" style="font-weight: 600; font-size: 0.9rem; cursor: pointer; display: block;">
+                            🧺 Shift Laundry & Water Heating
+                        </label>
+                        <span style="font-size: 0.78rem; color: var(--muted);">Move from 19:00 evening to solar noon (12:00)</span>
+                    </div>
+                    <input type="checkbox" name="shift_heavy_loads" id="shiftHeavyToggle" value="1"
+                           {% if twin_data.params.shift_heavy_loads %}checked{% endif %}
+                           style="width: 18px; height: 18px; accent-color: #10b981;">
+                </div>
+
+                <!-- 6. Baseload Vampire Cut -->
+                <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <label for="baseloadCutToggle" style="font-weight: 600; font-size: 0.9rem; cursor: pointer; display: block;">
+                            🧛 Cut Night Vampire Standby
+                        </label>
+                        <span style="font-size: 0.78rem; color: var(--muted);">Smart power strips turn off idle hubs 00:00 - 05:00</span>
+                    </div>
+                    <input type="checkbox" name="baseload_cut" id="baseloadCutToggle" value="1"
+                           {% if twin_data.params.baseload_cut %}checked{% endif %}
+                           style="width: 18px; height: 18px; accent-color: #10b981;">
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; background: #10b981; color: #fff; padding: 12px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; font-size: 0.95rem;">
+                    ⚡ Recalculate Digital Twin
+                </button>
+            </form>
+        </div>
+
+        <!-- RIGHT COLUMN: 24-HOUR INTERACTIVE COMPARISON CHART -->
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem;">24-Hour Load Curve: Baseline vs. Digital Twin</h3>
+                    <p style="margin: 4px 0 0 0; color: var(--muted); font-size: 0.85rem;">
+                        Real-time simulation of your hourly kilowatt-hour profile before and after interventions.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 12px; font-size: 0.8rem;">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 12px; height: 3px; background: #64748b; display: inline-block;"></span> Baseline
+                    </span>
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 12px; height: 3px; background: #10b981; display: inline-block;"></span> Digital Twin
+                    </span>
+                    {% if twin_data.params.solar_kw > 0 %}
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 12px; height: 3px; background: #f59e0b; display: inline-block;"></span> Solar Gen
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- CHART CANVAS -->
+            <div style="position: relative; height: 380px; width: 100%;">
+                <canvas id="digitalTwinChart"></canvas>
+            </div>
+
+            <!-- WHAT-IF INSIGHT CARDS -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 24px;">
+                <div style="padding: 14px; background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981; border-radius: 8px;">
+                    <strong style="color: #10b981; font-size: 0.88rem; display: block; margin-bottom: 4px;">💡 Solar Self-Consumption Insight</strong>
+                    <span style="font-size: 0.82rem; color: var(--muted);">
+                        {% if twin_data.params.solar_kw > 0 %}
+                            A {{ twin_data.params.solar_kw }} kW solar array supplies ~{{ twin_data.monthly_solar_kwh }} kWh/month, eliminating virtually all daytime air conditioning electricity expense.
+                        {% else %}
+                            Your household consumes daytime power during peak solar irradiance. Adding a 2-3 kW system could offset up to 70% of current grid consumption.
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div style="padding: 14px; background: rgba(56, 189, 248, 0.08); border-left: 4px solid #0284c7; border-radius: 8px;">
+                    <strong style="color: #0284c7; font-size: 0.88rem; display: block; margin-bottom: 4px;">🔋 Grid Peak Shifting Effect</strong>
+                    <span style="font-size: 0.82rem; color: var(--muted);">
+                        Evening peak (18:00 - 22:00) grid charges are minimized. Shifting heavy inductive appliances to off-peak slots avoids high Time-of-Day (ToD) tariff penalties.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- CHART.JS INTEGRATION -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const hourLabels = {{ hour_labels_json|safe }};
+    const baselineData = {{ baseline_curve_json|safe }};
+    const simulatedData = {{ simulated_curve_json|safe }};
+    const solarData = {{ solar_curve_json|safe }};
+
+    const ctx = document.getElementById('digitalTwinChart').getContext('2d');
+
+    const datasets = [
+        {
+            label: 'Baseline Usage (Original)',
+            data: baselineData,
+            borderColor: '#64748b',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            backgroundColor: 'transparent',
+            tension: 0.35,
+            pointRadius: 2,
+            pointHoverRadius: 5
+        },
+        {
+            label: 'Digital Twin (Simulated)',
+            data: simulatedData,
+            borderColor: '#10b981',
+            borderWidth: 3,
+            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#10b981'
+        }
+    ];
+
+    if ({{ twin_data.params.solar_kw }} > 0) {
+        datasets.push({
+            label: 'Rooftop Solar Output (kWh)',
+            data: solarData,
+            borderColor: '#f59e0b',
+            borderWidth: 2,
+            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 2
+        });
+    }
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: hourLabels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#64748b',
+                        font: { size: 12 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y.toFixed(3) + ' kWh';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(100, 116, 139, 0.1)' },
+                    ticks: { color: '#64748b' }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Electricity Draw (kWh)',
+                        color: '#64748b'
+                    },
+                    grid: { color: 'rgba(100, 116, 139, 0.1)' },
+                    ticks: { color: '#64748b' },
+                    min: 0
+                }
+            }
+        }
+    });
+
+    function applyPreset(type) {
+        const form = document.getElementById('simulatorForm');
+        if (type === 'solar') {
+            document.getElementById('solarKwInput').value = 3.0;
+            document.getElementById('acUpgradeToggle').checked = true;
+            document.getElementById('shiftHeavyToggle').checked = true;
+        } else if (type === 'ev') {
+            document.getElementById('hasEvToggle').checked = true;
+            document.getElementById('shiftHeavyToggle').checked = true;
+        } else if (type === 'eco') {
+            document.getElementById('solarKwInput').value = 2.0;
+            document.getElementById('acUpgradeToggle').checked = true;
+            document.getElementById('baseloadCutToggle').checked = true;
+            document.getElementById('shiftHeavyToggle').checked = true;
+            document.querySelector('[name="temp_setpoint_shift"]').value = "2";
+        }
+        form.submit();
+    }
+</script>
+{% endblock %}

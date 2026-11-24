@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Electricity Consumption History | EnergySync{% endblock %}
+
+{% block content %}
+
+<!-- HEADING -->
+<section class="page-heading">
+    <div>
+        <h1>Electricity Consumption History & Audit</h1>
+        <p>Comprehensive historical consumption log with anomaly flags and edit controls (Module 1 & 2).</p>
+    </div>
+
+    <div class="heading-actions">
+        <a href="{% url 'add_consumption' %}" class="btn-primary">
+            + Add Usage
+        </a>
+        <a href="{% url 'import_data' %}" class="btn-secondary">
+            ⇪ Import Data
+        </a>
+    </div>
+</section>
+
+<!-- HISTORY TABLE PANEL -->
+<div class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border);">
+
+    <div class="panel-heading" style="flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+        <div>
+            <h3>All Stored Consumption Records ({{ total_records }})</h3>
+            <p>Chronological records used for machine learning models and waste scoring</p>
+        </div>
+
+        <!-- Filter tabs -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div class="tab-switcher">
+                <a href="?source=" class="tab-btn {% if not source_filter %}active{% endif %}">All Sources</a>
+                <a href="?source=manual" class="tab-btn {% if source_filter == 'manual' %}active{% endif %}">Manual</a>
+                <a href="?source=dataset" class="tab-btn {% if source_filter == 'dataset' %}active{% endif %}">Imported</a>
+            </div>
+
+            <div class="tab-switcher">
+                <a href="?anomaly=yes" class="tab-btn {% if anomaly_filter == 'yes' %}active{% endif %}" style="color: #b91c1c;">
+                    ⚠️ Anomalies Only
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Consumption (kWh)</th>
+                    <th>Temperature</th>
+                    <th>Data Source</th>
+                    <th>AI Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in page_obj %}
+                <tr>
+                    <td>{{ record.recorded_at|date:"d M Y, h:i A" }}</td>
+                    <td>
+                        <strong style="font-size: 14.5px;">{{ record.energy_kwh }} kWh</strong>
+                    </td>
+                    <td>
+                        {% if record.temperature != None %}
+                            {{ record.temperature }} °C
+                        {% else %}
+                            <span style="color: #94a3b8;">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="source-badge">
+                            {{ record.get_source_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if record.anomaly %}
+                            <span class="status-pill abnormal" title="{{ record.anomaly.description }}">
+                                ⚠️ {{ record.anomaly.description|truncatechars:28 }}
+                            </span>
+                        {% else %}
+                            <span class="status-pill normal">✓ Normal</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'edit_consumption' record.pk %}" style="color: #168451; font-weight: 700; margin-right: 12px;">
+                            Edit
+                        </a>
+                        <form method="POST" action="{% url 'delete_consumption' record.pk %}" style="display: inline;" onsubmit="return confirm('Delete this record?');">
+                            {% csrf_token %}
+                            <button type="submit" style="background: none; border: none; color: #dc2626; cursor: pointer; font-weight: 600; font-size: 13px;">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-message" style="text-align: center; padding: 35px;">
+                        No consumption records found.
+                        <a href="{% url 'import_data' %}" style="color:#168451; font-weight:700;">Import Sample Data</a> or
+                        <a href="{% url 'add_consumption' %}" style="color:#168451; font-weight:700;">Add Manual Entry</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    {% if page_obj.has_other_pages %}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 22px; font-size: 13px;">
+        <span style="color: var(--muted);">
+            Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ total_records }} records
+        </span>
+
+        <div style="display: flex; gap: 7px;">
+            {% if page_obj.has_previous %}
+                <a href="?page=1&source={{ source_filter }}&anomaly={{ anomaly_filter }}" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}&source={{ source_filter }}&anomaly={{ anomaly_filter }}" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Previous</a>
+            {% endif %}
+
+            <span style="padding: 6px 12px; font-weight: 700; color: var(--green);">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&source={{ source_filter }}&anomaly={{ anomaly_filter }}" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&source={{ source_filter }}&anomaly={{ anomaly_filter }}" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Last</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

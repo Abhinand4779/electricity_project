@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Import Electricity Dataset | EnergySync{% endblock %}
+
+{% block content %}
+
+<!-- HEADING -->
+<section class="page-heading">
+    <div>
+        <h1>Electricity Data Collection & Preprocessing Pipeline</h1>
+        <p>Import historical records via CSV or load benchmark datasets with automatic cleaning & deduplication (Modules 2 & 3).</p>
+    </div>
+
+    <div class="heading-actions">
+        <a href="{% url 'history' %}" class="btn-secondary">
+            ⌁ View History
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn-secondary">
+            ← Overview
+        </a>
+    </div>
+</section>
+
+<!-- 2 IMPORT MECHANISM CARDS -->
+<div class="two-col-grid">
+
+    <!-- 1-CLICK BENCHMARK DATASET IMPORTER -->
+    <div class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <div class="brand-icon" style="background: #2563eb; width: 34px; height: 34px; font-size: 18px;">⚡</div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 750;">Quick Sample Dataset Import</h3>
+            </div>
+            <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin-bottom: 16px;">
+                Instantly populate your account with <strong>168 hourly records (1 full week)</strong> from the
+                <strong>UCI Individual Household Electric Power Consumption dataset</strong>.
+                Automatically anchors timestamps to the past 7 days up to today, runs Isolation Forest anomaly scans,
+                and computes full waste analytics.
+            </p>
+
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 12.5px; color: #1e40af;">
+                <strong>Dataset Specs:</strong>
+                <ul style="margin: 6px 0 0 18px; padding: 0;">
+                    <li>168 consecutive hourly electricity records</li>
+                    <li>Includes normal periods and natural peak surges</li>
+                    <li>Enables instant AI forecasts and waste scoring</li>
+                </ul>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="import_sample" value="1">
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; background: #2563eb; font-weight: 700;">
+                ⚡ Load Sample Household Dataset (UCI) →
+            </button>
+        </form>
+    </div>
+
+    <!-- CUSTOM CSV UPLOAD & CLEANING PIPELINE -->
+    <div class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <div class="brand-icon" style="background: #168451; width: 34px; height: 34px; font-size: 18px;">⇪</div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 750;">Upload Custom Meter CSV</h3>
+            </div>
+            <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin-bottom: 16px;">
+                Upload a smart meter CSV file from utility providers or sensors. The automated preprocessing pipeline
+                will remove duplicates, handle missing values, and validate energy consumption.
+            </p>
+
+            <form method="POST" enctype="multipart/form-data" id="csvForm">
+                {% csrf_token %}
+                <input type="hidden" name="upload_csv" value="1">
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-weight: 600; font-size: 12.5px; margin-bottom: 6px;">Select CSV File</label>
+                    {{ form.csv_file }}
+                    <small style="color: var(--muted); font-size: 11.5px; display: block; margin-top: 4px;">
+                        Supported columns: Date/Timestamp, Energy/Consumption (kWh), Temperature (°C).
+                    </small>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">
+                    ✓ Upload and Preprocess CSV →
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- PREPROCESSING PIPELINE SPECIFICATION (MODULE 3) -->
+<div class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border); margin-top: 24px;">
+    <div class="panel-heading" style="margin-bottom: 16px;">
+        <div>
+            <h3>Automated Preprocessing Pipeline (Module 3 Specification)</h3>
+            <p>Every imported record passes through the academic preprocessing flow</p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+        <div style="padding: 16px; background: #f8faf9; border-radius: 12px; border: 1px solid var(--border);">
+            <strong style="color: #168451; display: block; margin-bottom: 6px;">1. Deduplication</strong>
+            <p style="margin: 0; font-size: 12.5px; color: #526359;">
+                Drops duplicate timestamps to prevent biased weighting in regression and forecasting models.
+            </p>
+        </div>
+
+        <div style="padding: 16px; background: #f8faf9; border-radius: 12px; border: 1px solid var(--border);">
+            <strong style="color: #168451; display: block; margin-bottom: 6px;">2. Missing Value Imputation</strong>
+            <p style="margin: 0; font-size: 12.5px; color: #526359;">
+                Numeric variables (like temperature) are imputed with median estimators or forward-filled.
+            </p>
+        </div>
+
+        <div style="padding: 16px; background: #f8faf9; border-radius: 12px; border: 1px solid var(--border);">
+            <strong style="color: #168451; display: block; margin-bottom: 6px;">3. Outlier & Sanity Filtering</strong>
+            <p style="margin: 0; font-size: 12.5px; color: #526359;">
+                Negative energy values and malformed timestamps are filtered out prior to training and display.
+            </p>
+        </div>
+
+        <div style="padding: 16px; background: #f8faf9; border-radius: 12px; border: 1px solid var(--border);">
+            <strong style="color: #168451; display: block; margin-bottom: 6px;">4. Feature Extraction</strong>
+            <p style="margin: 0; font-size: 12.5px; color: #526359;">
+                Extracts calendar features: Hour, Day, DayOfWeek, Month, IsWeekend, and UsagePeriod.
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

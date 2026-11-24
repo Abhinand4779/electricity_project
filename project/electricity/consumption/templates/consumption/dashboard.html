@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard | EnergySync{% endblock %}
+
+{% block content %}
+
+<!-- ACTIVE ANOMALY ALERT BANNER -->
+{% if active_anomaly_count > 0 %}
+<div class="alert-banner warning" style="margin-top: 15px;">
+    <div>
+        <strong>⚠️ Attention Required:</strong> AI Anomaly Detection identified
+        <strong>{{ active_anomaly_count }}</strong> unusual electricity consumption spikes in your history.
+    </div>
+    <a href="{% url 'anomaly_detection' %}?status=active" class="btn-primary" style="padding: 6px 14px; font-size: 12px; background: #b45309;">
+        Review Anomalies →
+    </a>
+</div>
+{% endif %}
+
+<!-- PAGE HEADING -->
+<section class="page-heading">
+    <div>
+        <h1>Energy Management Dashboard</h1>
+        <p>Real-time analytics, AI forecasting, and energy waste detection.</p>
+    </div>
+
+    <div class="heading-actions">
+        <a href="{% url 'add_consumption' %}" class="btn-primary">
+            + Add Usage
+        </a>
+        <a href="{% url 'import_data' %}" class="btn-secondary">
+            ⇪ Import Data
+        </a>
+        <a href="{% url 'predictions' %}" class="btn-secondary" style="background:#f0fdf4; border-color:#86efac; color:#166534;">
+            🔮 AI Forecast
+        </a>
+    </div>
+</section>
+
+<!-- 4 PRIMARY KPI STAT CARDS -->
+<section class="stats-grid">
+
+    <!-- Card 1: Total Consumption -->
+    <div class="stat-card primary-stat">
+        <div class="stat-top">
+            <span>Total Consumption</span>
+            <span class="stat-icon">⚡</span>
+        </div>
+        <div class="stat-value">
+            {{ total_consumption|floatformat:2 }}
+            <small>kWh</small>
+        </div>
+        <div class="stat-footer">
+            <span>📊</span> Recorded electricity usage
+        </div>
+    </div>
+
+    <!-- Card 2: Total Records -->
+    <div class="stat-card">
+        <div class="stat-top">
+            <span>Total Records</span>
+            <span class="stat-icon">▤</span>
+        </div>
+        <div class="stat-value">
+            {{ total_records }}
+        </div>
+        <div class="stat-footer">
+            Stored consumption intervals
+        </div>
+    </div>
+
+    <!-- Card 3: Energy Efficiency Score -->
+    <div class="stat-card">
+        <div class="stat-top">
+            <span>Energy Efficiency</span>
+            <span class="grade-badge grade-{{ efficiency.grade|lower|slice:':1' }}">
+                {{ efficiency.grade }}
+            </span>
+        </div>
+        <div class="stat-value" style="color: {% if efficiency.score >= 75 %}#168451{% elif efficiency.score >= 55 %}#2563eb{% else %}#dc2626{% endif %};">
+            {{ efficiency.score }}<span style="font-size: 16px; color: var(--muted);">/100</span>
+        </div>
+        <div class="stat-footer">
+            <span style="font-weight: 700; color: #168451;">{{ efficiency.status }}</span>
+        </div>
+    </div>
+
+    <!-- Card 4: Tomorrow ML Prediction -->
+    <div class="stat-card">
+        <div class="stat-top">
+            <span>Tomorrow's Prediction</span>
+            <span class="stat-icon">🔮</span>
+        </div>
+        <div class="stat-value">
+            {{ tomorrow_prediction|floatformat:2 }}
+            <small>kWh</small>
+        </div>
+        <div class="stat-footer">
+            <a href="{% url 'predictions' %}" style="color: #168451; font-weight: 600;">
+                Random Forest ML Forecast →
+            </a>
+        </div>
+    </div>
+
+</section>
+
+<!-- INNOVATIVE AI FEATURES SPOTLIGHT BANNER -->
+<section style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(14, 165, 233, 0.08)); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 16px; padding: 20px 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span style="font-size: 1.3rem;">✨</span>
+                <h3 style="margin: 0; font-size: 1.15rem; color: #10b981; font-weight: 700;">
+                    Next-Gen AI Energy Innovations
+                </h3>
+                <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 12px; font-weight: 700;">
+                    7 ADVANCED MODULES
+                </span>
+            </div>
+            <p style="margin: 0; color: #64748b; font-size: 0.88rem;">
+                Explore real-time Digital Twin simulation, Explainable AI (XAI) root cause diagnostics, and your unique Energy Fingerprint.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{% url 'digital_twin' %}" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+                🧬 Digital Twin (01, 03, 06)
+            </a>
+            <a href="{% url 'waste_detective' %}" style="background: rgba(14, 165, 233, 0.15); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.3); padding: 8px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+                🕵️ Waste Detective & XAI (02, 07)
+            </a>
+            <a href="{% url 'energy_fingerprint' %}" style="background: rgba(168, 85, 247, 0.15); color: #9333ea; border: 1px solid rgba(168, 85, 247, 0.3); padding: 8px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+                🪪 Energy Fingerprint (05)
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ANALYTICS GRID -->
+<section class="analytics-grid">
+
+    <!-- SAVINGS & EFFICIENCY PANEL -->
+    <div class="panel savings-panel">
+
+        <div class="panel-heading">
+            <div>
+                <h3>Energy Waste & Efficiency</h3>
+                <p>Calculated waste vs baseline consumption</p>
+            </div>
+            <a href="{% url 'waste_analysis' %}" style="font-size: 12px; color: #168451; font-weight: 700;">Details →</a>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-ring" style="border: 8px solid #edf2ef; border-top-color: {% if waste.waste_percentage > 30 %}#dc2626{% else %}#168451{% endif %};">
+                <div class="progress-inner">
+                    <h2>{{ waste.waste_percentage|floatformat:1 }}%</h2>
+                    <span>ESTIMATED WASTE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="saving-details">
+            <div>
+                <span class="legend green" style="background:#dc2626;"></span>
+                <span>Potential Waste</span>
+                <strong>{{ waste.estimated_waste_kwh }} kWh</strong>
+            </div>
+
+            <div>
+                <span class="legend green"></span>
+                <span>Financial Impact</span>
+                <strong>₹{{ waste.financial_waste }}</strong>
+            </div>
+
+            <div>
+                <span class="legend grey"></span>
+                <span>Severity Status</span>
+                <strong>{{ waste.severity }}</strong>
+            </div>
+        </div>
+
+        <p class="panel-note">
+            <a href="{% url 'recommendations' %}" style="color:#168451; font-weight:700;">
+                💡 View {{ waste.estimated_waste_kwh }} kWh in Actionable Energy Savings →
+            </a>
+        </p>
+
+    </div>
+
+    <!-- MULTI-PERIOD CONSUMPTION CHART -->
+    <div class="panel chart-panel">
+
+        <div class="panel-heading chart-heading" style="flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h3>Electricity Consumption</h3>
+                <p>Visual comparisons across time periods (Section 6.3)</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <!-- Period Switcher Tabs -->
+                <div class="tab-switcher">
+                    <button class="tab-btn active" id="tabDaily" onclick="switchPeriod('daily')">Daily</button>
+                    <button class="tab-btn" id="tabWeekly" onclick="switchPeriod('weekly')">Weekly</button>
+                    <button class="tab-btn" id="tabMonthly" onclick="switchPeriod('monthly')">Monthly</button>
+                </div>
+
+                <select id="chartType" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border);">
+                    <option value="bar">Bar</option>
+                    <option value="line">Line</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chart-container" style="height: 300px; position: relative;">
+            <canvas id="usageChart"></canvas>
+        </div>
+
+        <div class="chart-footer" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span class="legend green"></span>
+                <span id="chartPeriodLegend">Recorded daily electricity usage (kWh)</span>
+            </div>
+            <a href="{% url 'history' %}" style="font-size: 12px; color: var(--green); font-weight: 600;">
+                View All Records →
+            </a>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- BOTTOM ROW: PERIOD BREAKDOWN & CARBON TRACKER -->
+<section class="bottom-grid">
+
+    <!-- USAGE BY PERIOD INSIGHTS -->
+    <div class="panel devices-panel">
+
+        <div class="panel-heading">
+            <div>
+                <h3>Usage By Time of Day</h3>
+                <p>Consumption distribution across operational periods</p>
+            </div>
+            <a href="{% url 'waste_analysis' %}" style="font-size: 12px; color: #168451; font-weight: 700;">Analysis →</a>
+        </div>
+
+        <div class="device-grid">
+
+            <div class="device-item">
+                <div class="device-icon" style="background:#e0f2fe; color:#0284c7;">🌙</div>
+                <div class="device-info">
+                    <strong>Night (00:00 - 05:59)</strong>
+                    <small>Standby & baseload power</small>
+                </div>
+                <span class="device-status" style="font-weight: 750;">{{ waste.period_breakdown.Night }} kWh</span>
+            </div>
+
+            <div class="device-item">
+                <div class="device-icon" style="background:#fef3c7; color:#d97706;">🌅</div>
+                <div class="device-info">
+                    <strong>Morning (06:00 - 11:59)</strong>
+                    <small>Morning routine & startup</small>
+                </div>
+                <span class="device-status" style="font-weight: 750;">{{ waste.period_breakdown.Morning }} kWh</span>
+            </div>
+
+            <div class="device-item">
+                <div class="device-icon" style="background:#ffedd5; color:#ea580c;">☀️</div>
+                <div class="device-info">
+                    <strong>Afternoon (12:00 - 16:59)</strong>
+                    <small>Solar peak hours</small>
+                </div>
+                <span class="device-status" style="font-weight: 750;">{{ waste.period_breakdown.Afternoon }} kWh</span>
+            </div>
+
+            <div class="device-item">
+                <div class="device-icon" style="background:#fee2e2; color:#dc2626;">🌆</div>
+                <div class="device-info">
+                    <strong>Evening (17:00 - 23:59)</strong>
+                    <small>Peak household demand</small>
+                </div>
+                <span class="device-status" style="font-weight: 750;">{{ waste.period_breakdown.Evening }} kWh</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CARBON FOOTPRINT TRACKER -->
+    <div class="carbon-panel">
+
+        <div class="carbon-content">
+
+            <div class="carbon-heading">
+                <div>
+                    <h3>Carbon Footprint Tracker</h3>
+                    <p>Environmental emissions factor: 0.82 kg CO₂e / kWh</p>
+                </div>
+                <span class="carbon-icon">♻</span>
+            </div>
+
+            <div class="carbon-stat">
+
+                <div>
+                    <small>ENERGY USAGE</small>
+                    <h2>{{ total_consumption|floatformat:1 }}</h2>
+                    <span>kWh recorded</span>
+                </div>
+
+                <div>
+                    <small>CARBON EMISSIONS</small>
+                    <h2>{{ carbon_emissions|floatformat:1 }}</h2>
+                    <span>kg CO₂ equivalent</span>
+                </div>
+
+            </div>
+
+            <div class="carbon-message">
+                {% if carbon_emissions > 200 %}
+                    High emissions footprint. Adopting energy-saving recommendations can reduce up to 35 kg of CO₂ emissions each month.
+                {% else %}
+                    Moderate carbon footprint. Continue tracking and shifting usage away from peak hours to maintain sustainability.
+                {% endif %}
+            </div>
+
+            <a href="{% url 'recommendations' %}" class="carbon-button">
+                Explore Energy-Saving Recommendations →
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- RECENT ELECTRICITY RECORDS -->
+<section class="panel recent-panel" style="margin-top: 24px;">
+
+    <div class="panel-heading">
+        <div>
+            <h3>Recent Consumption Records</h3>
+            <p>Your latest electricity observations with AI anomaly inspection</p>
+        </div>
+        <a href="{% url 'history' %}" class="view-all">
+            View All History ({{ total_records }}) →
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Consumption (kWh)</th>
+                    <th>Temperature</th>
+                    <th>Source</th>
+                    <th>AI Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in recent_records %}
+                <tr>
+                    <td>{{ record.recorded_at|date:"d M Y, h:i A" }}</td>
+                    <td><strong>{{ record.energy_kwh }} kWh</strong></td>
+                    <td>
+                        {% if record.temperature %}
+                            {{ record.temperature }} °C
+                        {% else %}
+                            <span style="color:#94a3b8;">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="source-badge">
+                            {{ record.get_source_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if record.is_anomaly %}
+                            <span class="status-pill abnormal">⚠️ Unusual Spike</span>
+                        {% else %}
+                            <span class="status-pill normal">✓ Normal</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'edit_consumption' record.pk %}" style="color:#168451; font-weight:600; margin-right:12px;">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-message">
+                        No electricity consumption records found.
+                        <a href="{% url 'import_data' %}" style="color:#168451; font-weight:700;">Import Sample Dataset</a> or
+                        <a href="{% url 'add_consumption' %}" style="color:#168451; font-weight:700;">Add Manual Entry</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<!-- SERIALIZED DATA FOR CHART.JS -->
+{{ chart_labels|json_script:"daily-labels" }}
+{{ chart_values|json_script:"daily-values" }}
+{{ weekly_labels|json_script:"weekly-labels" }}
+{{ weekly_values|json_script:"weekly-values" }}
+{{ monthly_labels|json_script:"monthly-labels" }}
+{{ monthly_values|json_script:"monthly-values" }}
+
+<script>
+// Dataset mappings
+const periodData = {
+    daily: {
+        labels: JSON.parse(document.getElementById('daily-labels').textContent || '[]'),
+        values: JSON.parse(document.getElementById('daily-values').textContent || '[]'),
+        legend: 'Recorded daily electricity usage (kWh)'
+    },
+    weekly: {
+        labels: JSON.parse(document.getElementById('weekly-labels').textContent || '[]'),
+        values: JSON.parse(document.getElementById('weekly-values').textContent || '[]'),
+        legend: 'Recorded weekly electricity usage (kWh)'
+    },
+    monthly: {
+        labels: JSON.parse(document.getElementById('monthly-labels').textContent || '[]'),
+        values: JSON.parse(document.getElementById('monthly-values').textContent || '[]'),
+        legend: 'Recorded monthly electricity usage (kWh)'
+    }
+};
+
+let currentPeriod = 'daily';
+const chartCanvas = document.getElementById("usageChart");
+let usageChart = null;
+
+if (chartCanvas) {
+    const ctx = chartCanvas.getContext("2d");
+    usageChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: periodData.daily.labels,
+            datasets: [{
+                label: "Usage (kWh)",
+                data: periodData.daily.values,
+                backgroundColor: "#168451",
+                borderRadius: 8,
+                maxBarThickness: 38
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Energy (kWh)' }
+                }
+            }
+        }
+    });
+}
+
+function switchPeriod(period) {
+    currentPeriod = period;
+    document.querySelectorAll('.tab-switcher .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('tab' + period.charAt(0).toUpperCase() + period.slice(1)).classList.add('active');
+
+    const pData = periodData[period];
+    document.getElementById('chartPeriodLegend').textContent = pData.legend;
+
+    if (usageChart) {
+        usageChart.data.labels = pData.labels;
+        usageChart.data.datasets[0].data = pData.values;
+        usageChart.update();
+    }
+}
+
+document.getElementById("chartType").addEventListener("change", function() {
+    if (usageChart) {
+        usageChart.config.type = this.value;
+        if (this.value === 'line') {
+            usageChart.data.datasets[0].borderColor = '#168451';
+            usageChart.data.datasets[0].fill = false;
+            usageChart.data.datasets[0].tension = 0.35;
+        }
+        usageChart.update();
+    }
+});
+</script>
+
+{% endblock %}

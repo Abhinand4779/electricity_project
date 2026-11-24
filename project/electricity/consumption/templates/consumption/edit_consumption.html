@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Electricity Usage | EnergySync{% endblock %}
+
+{% block content %}
+
+<!-- HEADING -->
+<section class="page-heading">
+    <div>
+        <h1>Edit Electricity Consumption Record</h1>
+        <p>Update interval timestamp, energy consumption, or environmental conditions.</p>
+    </div>
+
+    <div class="heading-actions">
+        <a href="{% url 'history' %}" class="btn-secondary">
+            ← Cancel & Back to History
+        </a>
+    </div>
+</section>
+
+<div class="panel" style="background: white; border-radius: 16px; padding: 28px; border: 1px solid var(--border); max-width: 700px;">
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert-banner danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px;">
+                📅 Recording Date & Time
+            </label>
+            {{ form.recorded_at }}
+            {% for error in form.recorded_at.errors %}
+                <small style="color: #dc2626; display: block; margin-top: 4px;">{{ error }}</small>
+            {% endfor %}
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px;">
+                ⚡ Electricity Consumption (kWh)
+            </label>
+            {{ form.energy_kwh }}
+            {% for error in form.energy_kwh.errors %}
+                <small style="color: #dc2626; display: block; margin-top: 4px;">{{ error }}</small>
+            {% endfor %}
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px;">
+                🌡️ Temperature (°C) <span style="font-weight: normal; color: var(--muted);">(Optional)</span>
+            </label>
+            {{ form.temperature }}
+            {% for error in form.temperature.errors %}
+                <small style="color: #dc2626; display: block; margin-top: 4px;">{{ error }}</small>
+            {% endfor %}
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 28px;">
+            <button type="submit" class="btn-primary" style="padding: 12px 24px; font-weight: 700;">
+                ✓ Save Changes
+            </button>
+            <a href="{% url 'history' %}" class="btn-secondary" style="padding: 12px 20px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}

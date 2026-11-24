@@ -1,0 +1,463 @@
+
+{% extends "base.html" %}
+
+{% block title %}Smart Meter Dataset | EnergySync{% endblock %}
+
+{% block content %}
+
+<style>
+    .dataset-page {
+        padding: 25px 0 45px;
+        color: #1e293b;
+    }
+
+    .dataset-header {
+        background: linear-gradient(120deg, #102a43, #176b87, #159895);
+        color: white;
+        padding: 35px;
+        border-radius: 18px;
+        margin-bottom: 28px;
+        box-shadow: 0 8px 25px rgba(15, 60, 80, 0.15);
+    }
+
+    .dataset-header h1 {
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .dataset-header p {
+        color: #d9f3f2;
+        margin-bottom: 0;
+    }
+
+    .dataset-tag {
+        display: inline-block;
+        background: rgba(255,255,255,0.16);
+        padding: 6px 13px;
+        border-radius: 20px;
+        font-size: 12px;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid #e8eef3;
+        border-radius: 15px;
+        padding: 22px;
+        height: 100%;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 21px;
+        margin-bottom: 15px;
+    }
+
+    .icon-blue {
+        background: #e7f1ff;
+        color: #2563eb;
+    }
+
+    .icon-green {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .icon-red {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .stat-value {
+        font-size: 29px;
+        font-weight: 750;
+        color: #172b4d;
+        margin: 0;
+    }
+
+    .section-card {
+        background: white;
+        border: 1px solid #e8eef3;
+        border-radius: 15px;
+        padding: 24px;
+        margin-top: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.035);
+    }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .section-heading h3 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+        color: #172b4d;
+    }
+
+    .dataset-info {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .table-responsive {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .dataset-table {
+        margin-bottom: 0;
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    .dataset-table thead th {
+        background: #edf4f8;
+        color: #334155;
+        padding: 15px 13px;
+        font-weight: 700;
+        border-bottom: 2px solid #dbe5ec;
+    }
+
+    .dataset-table tbody td {
+        padding: 13px;
+        color: #475569;
+        vertical-align: middle;
+    }
+
+    .dataset-table tbody tr:hover {
+        background: #f0f9ff;
+    }
+
+    .normal-badge {
+        background: #dcfce7;
+        color: #15803d;
+        padding: 5px 11px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .abnormal-badge {
+        background: #fee2e2;
+        color: #b91c1c;
+        padding: 5px 11px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .pagination-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
+    }
+
+    .page-number {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .pagination-links {
+        display: flex;
+        gap: 7px;
+    }
+
+    .page-btn {
+        text-decoration: none;
+        padding: 8px 14px;
+        border: 1px solid #dbe5ec;
+        border-radius: 8px;
+        color: #176b87;
+        font-size: 13px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .page-btn:hover {
+        background: #176b87;
+        color: white;
+        border-color: #176b87;
+    }
+
+    .dataset-footer {
+        margin-top: 18px;
+        color: #94a3b8;
+        font-size: 12px;
+        text-align: right;
+    }
+
+    @media (max-width: 576px) {
+        .dataset-header {
+            padding: 25px 20px;
+        }
+
+        .dataset-header h1 {
+            font-size: 24px;
+        }
+
+        .section-card {
+            padding: 16px;
+        }
+    }
+</style>
+
+<div class="container dataset-page">
+
+    {% if error %}
+
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+
+    {% else %}
+
+    <!-- PAGE HEADER -->
+    <div class="dataset-header">
+
+        <span class="dataset-tag">ENERGYSYNC / MACHINE LEARNING</span>
+
+        <h1>Smart Meter Dataset</h1>
+
+        <p>
+            Explore the electricity consumption data used to train
+            and evaluate the AI-powered anomaly detection model.
+        </p>
+
+    </div>
+
+
+    <!-- STATISTICS CARDS -->
+    <div class="row g-3">
+
+        <div class="col-md-4">
+            <div class="stat-card">
+
+                <div class="stat-icon icon-blue">
+                    <i class="bi bi-database"></i>
+                </div>
+
+                <p class="stat-label">Total Dataset Records</p>
+
+                <h2 class="stat-value">{{ total_records }}</h2>
+
+            </div>
+        </div>
+
+
+        <div class="col-md-4">
+            <div class="stat-card">
+
+                <div class="stat-icon icon-green">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+
+                <p class="stat-label">Normal Records</p>
+
+                <h2 class="stat-value">{{ normal_count }}</h2>
+
+            </div>
+        </div>
+
+
+        <div class="col-md-4">
+            <div class="stat-card">
+
+                <div class="stat-icon icon-red">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <p class="stat-label">Abnormal Records</p>
+
+                <h2 class="stat-value">{{ abnormal_count }}</h2>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- DATASET TABLE -->
+    <div class="section-card">
+
+        <div class="section-heading">
+
+            <div>
+                <h3>
+                    <i class="bi bi-table me-2"></i>
+                    Dataset Records
+                </h3>
+
+                <p class="dataset-info mt-2 mb-0">
+                    Smart meter electricity consumption data
+                </p>
+            </div>
+
+            <span class="badge bg-primary">
+                {{ total_records }} Records
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table dataset-table table-hover">
+
+                <thead>
+                    <tr>
+                        <th>#</th>
+
+                        {% for column in columns %}
+                            <th>{{ column }}</th>
+                        {% endfor %}
+
+                    </tr>
+                </thead>
+
+
+                <tbody>
+
+                    {% for record in page_obj %}
+
+                        <tr>
+
+                            <td>
+                                {{ forloop.counter0|add:page_obj.start_index }}
+                            </td>
+
+                            {% for value in record %}
+
+                                <td>
+
+                                    {% if value == "Normal" or value == "normal" %}
+                                        <span class="normal-badge">
+                                            Normal
+                                        </span>
+
+                                    {% elif value == "Abnormal" or value == "abnormal" %}
+                                        <span class="abnormal-badge">
+                                            Abnormal
+                                        </span>
+
+                                    {% else %}
+                                        {{ value }}
+                                    {% endif %}
+
+                                </td>
+
+                            {% endfor %}
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="{{ columns|length|add:1 }}"
+                                class="text-center py-4">
+                                No dataset records found.
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- PAGINATION -->
+        <div class="pagination-area">
+
+            <div class="page-number">
+                Showing
+                <strong>{{ page_obj.start_index }}</strong>
+                –
+                <strong>{{ page_obj.end_index }}</strong>
+                of
+                <strong>{{ total_records }}</strong>
+                records
+            </div>
+
+
+            <div class="pagination-links">
+
+                {% if page_obj.has_previous %}
+
+                    <a href="?page=1" class="page-btn">
+                        First
+                    </a>
+
+                    <a href="?page={{ page_obj.previous_page_number }}"
+                       class="page-btn">
+                        Previous
+                    </a>
+
+                {% endif %}
+
+
+                <span class="page-btn">
+                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+
+
+                {% if page_obj.has_next %}
+
+                    <a href="?page={{ page_obj.next_page_number }}"
+                       class="page-btn">
+                        Next
+                    </a>
+
+                    <a href="?page={{ page_obj.paginator.num_pages }}"
+                       class="page-btn">
+                        Last
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="dataset-footer">
+        EnergySync | AI-Powered Personal Energy Waste Predictor
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

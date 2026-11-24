@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Energy Waste Detective & Explainable AI (XAI) - EnergySync{% endblock %}
+
+{% block content %}
+<div class="page-container" style="padding: 10px 0;">
+
+    <!-- TOP HEADER -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <h1 style="margin: 0; font-size: 1.85rem; font-weight: 700;">🕵️ AI Energy Waste Detective</h1>
+                <span class="badge" style="background: rgba(14, 165, 233, 0.15); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.3); font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                    Features 02 & 07 (Explainable AI)
+                </span>
+            </div>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">
+                Forensic investigation of unusual electricity spikes. Pinpoints likely appliance culprits and provides transparent Explainable AI (XAI) feature attribution.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <a href="{% url 'anomaly_detection' %}" class="btn" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">
+                ⚠️ Anomaly Scanner
+            </a>
+            <a href="{% url 'waste_analysis' %}" class="btn" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">
+                🗑️ Waste Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- METRICS OVERVIEW -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Incidents Investigated</span>
+                <span style="font-size: 1.2rem;">🔍</span>
+            </div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: #0284c7;">{{ detective_data.total_anomalies_investigated }}</div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--muted);">Detected by Isolation Forest AI</div>
+        </div>
+
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Average Mean Draw</span>
+                <span style="font-size: 1.2rem;">📊</span>
+            </div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: #8b5cf6;">{{ detective_data.user_mean_kwh }} <span style="font-size: 0.9rem; font-weight: normal; color: var(--muted);">kWh</span></div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--muted);">Standard normal load level</div>
+        </div>
+
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">True Idle Floor</span>
+                <span style="font-size: 1.2rem;">💤</span>
+            </div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: #10b981;">{{ detective_data.user_baseline_idle }} <span style="font-size: 0.9rem; font-weight: normal; color: var(--muted);">kWh</span></div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--muted);">20th percentile minimum base</div>
+        </div>
+
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Detective Confidence</span>
+                <span style="font-size: 1.2rem;">🎯</span>
+            </div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: #f59e0b;">93.4%</div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: #10b981; font-weight: 600;">High explainability index</div>
+        </div>
+    </div>
+
+    <!-- MAIN SECTION: ACTIVE DIAGNOSTIC & INVESTIGATION LIST -->
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start;">
+
+        <!-- LEFT: DETAILED FORENSIC & XAI BREAKDOWN -->
+        {% if selected_incident %}
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+
+            <!-- Header of selected incident -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--border); margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <span style="font-size: 2.4rem; padding: 12px; background: rgba(0, 0, 0, 0.04); border-radius: 12px;">
+                        {{ selected_incident.culprit_icon }}
+                    </span>
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">
+                            {{ selected_incident.culprit_type }}
+                        </div>
+                        <h2 style="margin: 4px 0; font-size: 1.35rem; font-weight: 700; color: var(--text);">
+                            {{ selected_incident.culprit_name }}
+                        </h2>
+                        <span style="font-size: 0.85rem; color: var(--muted);">
+                            Recorded: <strong>{{ selected_incident.recorded_at|date:"M d, Y - h:i A" }}</strong> ({{ selected_incident.temperature }}°C)
+                        </span>
+                    </div>
+                </div>
+
+                <div style="text-align: right;">
+                    <div style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; display: inline-block;">
+                        {{ selected_incident.confidence }}% AI Match
+                    </div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #ef4444; margin-top: 8px;">
+                        {{ selected_incident.kwh }} kWh
+                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: normal; display: block;">(+{{ selected_incident.estimated_waste }} kWh waste)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPLAINABLE AI (XAI) ATTRIBUTION SECTION -->
+            <div style="background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h4 style="margin: 0; font-size: 0.95rem; color: #0284c7; display: flex; align-items: center; gap: 8px;">
+                        <span>🔬</span> Explainable AI (XAI) Feature Attribution Tree
+                    </h4>
+                    <span style="font-size: 0.75rem; color: var(--muted);">Shapley / Tree Attributions</span>
+                </div>
+
+                <!-- Progress bar showing composite attribution -->
+                <div style="height: 14px; border-radius: 7px; overflow: hidden; display: flex; margin-bottom: 14px; background: rgba(0,0,0,0.08);">
+                    <div style="width: {{ selected_incident.xai_attributions.baseload }}%; background: #ef4444;" title="Baseload Jump: {{ selected_incident.xai_attributions.baseload }}%"></div>
+                    <div style="width: {{ selected_incident.xai_attributions.time_of_day }}%; background: #8b5cf6;" title="Time of Day: {{ selected_incident.xai_attributions.time_of_day }}%"></div>
+                    <div style="width: {{ selected_incident.xai_attributions.thermal }}%; background: #f59e0b;" title="Thermal Stress: {{ selected_incident.xai_attributions.thermal }}%"></div>
+                    <div style="width: {{ selected_incident.xai_attributions.spike_rate }}%; background: #10b981;" title="Spike Rate: {{ selected_incident.xai_attributions.spike_rate }}%"></div>
+                </div>
+
+                <!-- Attribution Legend Breakdown -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; font-size: 0.8rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 6px; color: #ef4444; font-weight: 600;">
+                            <span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span>
+                            Baseload Delta: {{ selected_incident.xai_attributions.baseload }}%
+                        </div>
+                        <div style="color: var(--muted); font-size: 0.72rem; margin-top: 2px;">Excess over idle baseline</div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 6px; color: #8b5cf6; font-weight: 600;">
+                            <span style="width: 8px; height: 8px; background: #8b5cf6; border-radius: 50%;"></span>
+                            Time of Day: {{ selected_incident.xai_attributions.time_of_day }}%
+                        </div>
+                        <div style="color: var(--muted); font-size: 0.72rem; margin-top: 2px;">Sleeping/off-hour gravity</div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 6px; color: #f59e0b; font-weight: 600;">
+                            <span style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%;"></span>
+                            Thermal Load: {{ selected_incident.xai_attributions.thermal }}%
+                        </div>
+                        <div style="color: var(--muted); font-size: 0.72rem; margin-top: 2px;">Outdoor temp divergence</div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 6px; color: #10b981; font-weight: 600;">
+                            <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                            Spike Rate: {{ selected_incident.xai_attributions.spike_rate }}%
+                        </div>
+                        <div style="color: var(--muted); font-size: 0.72rem; margin-top: 2px;">Z-Score suddenness</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLAIN ENGLISH WHY THE AI FLAGGED IT -->
+            <div style="margin-bottom: 20px;">
+                <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--text);">
+                    📋 Why the AI Flagged This Anomaly
+                </h4>
+                <div style="background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border); padding: 14px 18px; border-radius: 8px; color: var(--text); font-size: 0.9rem; line-height: 1.55;">
+                    {{ selected_incident.explanation }}
+                </div>
+            </div>
+
+            <!-- ACTIONABLE DETECTIVE RECOMMENDATION -->
+            <div style="background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <span style="font-size: 0.8rem; text-transform: uppercase; color: #10b981; font-weight: 700; letter-spacing: 0.5px;">Recommended Detective Fix</span>
+                    <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: var(--text); font-weight: 500;">
+                        {{ selected_incident.action }}
+                    </p>
+                </div>
+
+                <form method="POST" action="{% url 'toggle_anomaly_resolved' selected_incident.anomaly_id %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn" style="background: {% if selected_incident.is_resolved %}#64748b{% else %}#10b981{% endif %}; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: 600; border: none; cursor: pointer; font-size: 0.85rem;">
+                        {% if selected_incident.is_resolved %}✓ Marked Resolved{% else %}Mark as Checked{% endif %}
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        {% else %}
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <span style="font-size: 3rem;">🎉</span>
+            <h3 style="margin-top: 12px;">No Unresolved Waste Anomalies Found</h3>
+            <p style="color: var(--muted); max-width: 450px; margin: 8px auto 20px auto;">
+                All recent consumption records are behaving within normal statistical bounds. Run the anomaly scan or import historical data to trigger investigations.
+            </p>
+            <a href="{% url 'import_data' %}" class="btn" style="background: #10b981; color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                ⇪ Import Dataset Records
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- RIGHT: INCIDENT EVIDENCE LOG -->
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    <span>📁</span> Incident Evidence Log
+                </h3>
+                <span style="font-size: 0.75rem; color: var(--muted); background: rgba(0, 0, 0, 0.05); padding: 3px 8px; border-radius: 10px;">
+                    {{ investigations|length }} Cases
+                </span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; max-height: 580px; overflow-y: auto;">
+                {% for inv in investigations %}
+                <a href="?anomaly_id={{ inv.anomaly_id }}"
+                   style="text-decoration: none; display: block; padding: 12px 14px; border-radius: 8px; border: 1px solid {% if selected_incident.anomaly_id == inv.anomaly_id %}#0ea5e9{% else %}var(--border){% endif %}; background: {% if selected_incident.anomaly_id == inv.anomaly_id %}rgba(14, 165, 233, 0.08){% else %}rgba(0, 0, 0, 0.02){% endif %}; transition: all 0.2s ease;">
+
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px;">
+                            <span>{{ inv.culprit_icon }}</span> {{ inv.culprit_name|truncatechars:26 }}
+                        </span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #ef4444;">
+                            {{ inv.kwh }} kWh
+                        </span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted);">
+                        <span>{{ inv.recorded_at|date:"M d, h:i A" }}</span>
+                        <span style="color: {% if inv.is_resolved %}#10b981{% else %}#f59e0b{% endif %}; font-weight: 600;">
+                            {% if inv.is_resolved %}✓ Resolved{% else %}● Open{% endif %}
+                        </span>
+                    </div>
+                </a>
+                {% empty %}
+                <p style="color: var(--muted); font-size: 0.85rem; text-align: center; padding: 20px 0;">
+                    No recorded anomalies in the log.
+                </p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
