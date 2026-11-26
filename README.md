@@ -73,20 +73,25 @@ Navigate to **`http://127.0.0.1:8000/`** (or `http://127.0.0.1:8080/`).
 
 ---
 
-## 🔑 Pre-Configured Credentials
+## 🔑 Two-Tier Authentication & Pre-Configured Credentials
 
-| Role | Username | Password | Access |
-| :--- | :--- | :--- | :--- |
-| **Admin / Examiner Account** | `hp` | `admin123` | Full dashboard access & Django Admin (`/admin/`) |
-| **Demo Student Account** | `demo_user` | `demo1234` | Pre-populated with historical records & anomalies |
+EnergySync implements an enterprise-grade **Two-Tier Multi-Tenant Architecture** with dedicated authentication portals and a 1-click viva switcher in the top navigation bar:
+
+| Portal Role | Dedicated Login URL | Username | Password | Operational Scope |
+| :--- | :--- | :--- | :--- | :--- |
+| **🛡️ Grid Administrator** | `http://127.0.0.1:8080/admin-login/` | `hp` | `admin123` | Macro-level grid demand, ML model health monitor, multi-household audit table & Django admin |
+| **⚡ Domestic Consumer** | `http://127.0.0.1:8080/login/` | `demo_user` | `demo1234` | Single-home smart meter telemetry (171 records), KSEB bill calculation, and all 7 AI innovation tools |
 
 ---
 
 ## 📚 Academic & Viva Voce Documentation
 The repository includes complete final-year examination and seminar defense guides:
+- `AI_Energy_Project_Master_Viva_Handbook.pdf`: **Master 6-Page Technical Handbook & Top 25 Viva Q&A Guide**
+- `COMPLETE_PROJECT_REPORT_CALICUT_UNIVERSITY.md`: University of Calicut Standard Comprehensive Project Report
 - `AI_Energy_Waste_Predictor_Final_Year_Project_Viva_Guide.pdf`: 9-Page Comprehensive Defense Guide
 - `Beginner_Friendly_AI_Energy_Project_Viva_Guide.pdf`: 5-Page Fundamental ML Q&A Guide
 - `ADVANCED_AI_FEATURES_VIVA_GUIDE.md`: Technical defense guide for the 7 new AI innovations
 - `BCA_Project_Presentation_Model.pptx`: Final-year university slide deck model
 - `Project_Documentation_Academic_PDF.pdf`: Original Software Requirements Specification (SRS)
 - `HOW_TO_RUN_FOR_STUDENTS.txt`: Handover and setup instructions for students
+

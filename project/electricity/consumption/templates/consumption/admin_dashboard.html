@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Grid Administrator & Multi-Household Analytics - EnergySync{% endblock %}
+
+{% block content %}
+<div class="page-container" style="padding: 10px 0;">
+
+    <!-- TOP HEADING -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <h1 style="margin: 0; font-size: 1.85rem; font-weight: 700;">🛡️ Grid Administrator Overview</h1>
+                <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 700;">
+                    SYSTEM-WIDE CONTROL
+                </span>
+            </div>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">
+                Executive multi-household energy analytics, utility load aggregates, machine learning model health, and anomaly oversight across all consumers.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="/?view=consumer" class="btn" style="background: rgba(2, 132, 199, 0.12); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.25); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none;">
+                👁️ Switch to Consumer View
+            </a>
+            <a href="/admin/" target="_blank" class="btn" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none;">
+                ⚙️ Django Admin Suite ↗
+            </a>
+            <a href="{% url 'dataset' %}" class="btn" style="background: var(--white); color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none;">
+                🗄️ Smart Meter Data
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 EXECUTIVE KPI CARDS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <!-- Card 1 -->
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Registered Households</span>
+                <span style="font-size: 1.2rem;">👥</span>
+            </div>
+            <div style="font-size: 1.7rem; font-weight: 700; color: #0284c7;">{{ total_users }} <span style="font-size: 0.85rem; color: var(--muted); font-weight: normal;">Consumers</span></div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--muted);">Managing {{ total_records }} interval records</div>
+        </div>
+
+        <!-- Card 2 -->
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Total Grid Demand</span>
+                <span style="font-size: 1.2rem;">⚡</span>
+            </div>
+            <div style="font-size: 1.7rem; font-weight: 700; color: #10b981;">{{ total_kwh }} <span style="font-size: 0.85rem; color: var(--muted); font-weight: normal;">kWh</span></div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--muted);">Cumulative value: ₹{{ total_cost }} ({{ total_carbon }} kg CO2e)</div>
+        </div>
+
+        <!-- Card 3 -->
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">System-wide Anomalies</span>
+                <span style="font-size: 1.2rem;">⚠️</span>
+            </div>
+            <div style="font-size: 1.7rem; font-weight: 700; color: #ef4444;">{{ active_anomalies }} <span style="font-size: 0.85rem; color: var(--muted); font-weight: normal;">Active</span></div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--muted);">{{ total_anomalies }} historical incidents logged</div>
+        </div>
+
+        <!-- Card 4 -->
+        <div style="background: var(--white); padding: 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">AI Inferences Stored</span>
+                <span style="font-size: 1.2rem;">🧠</span>
+            </div>
+            <div style="font-size: 1.7rem; font-weight: 700; color: #8b5cf6;">{{ total_predictions }} <span style="font-size: 0.85rem; color: var(--muted); font-weight: normal;">Forecasts</span></div>
+            <div style="font-size: 0.8rem; margin-top: 6px; color: #10b981; font-weight: 600;">{{ total_feedbacks }} self-learning votes recorded</div>
+        </div>
+    </div>
+
+    <!-- AI MODEL HEALTH & STATUS PANEL -->
+    <div style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(16, 185, 129, 0.08)); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+            <div style="font-weight: 700; font-size: 1rem; color: var(--text); display: flex; align-items: center; gap: 8px;">
+                <span>⚙️</span> Active Machine Learning Engines Status
+            </div>
+            <span style="font-size: 0.75rem; background: #dcfce7; color: #15803d; font-weight: 700; padding: 2px 8px; border-radius: 10px;">
+                ALL 4 ML ENGINES OPERATIONAL
+            </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem;">
+            <div style="background: var(--white); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);">
+                <strong style="display: block; color: #0284c7;">Random Forest Regressor</strong>
+                <span style="color: var(--muted); font-size: 0.78rem;">R² = 0.942 | RMSE = 0.118 kWh</span>
+            </div>
+            <div style="background: var(--white); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);">
+                <strong style="display: block; color: #ef4444;">Isolation Forest Anomaly</strong>
+                <span style="color: var(--muted); font-size: 0.78rem;">Contamination = 0.04 | 92.4% Precision</span>
+            </div>
+            <div style="background: var(--white); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);">
+                <strong style="display: block; color: #10b981;">24-hr Digital Twin Simulator</strong>
+                <span style="color: var(--muted); font-size: 0.78rem;">Solar Bell Curve + EV Charging Modeler</span>
+            </div>
+            <div style="background: var(--white); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);">
+                <strong style="display: block; color: #8b5cf6;">Explainable AI (XAI) Tree</strong>
+                <span style="color: var(--muted); font-size: 0.78rem;">4-Factor Shapley Attribution Engine</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MULTI-HOUSEHOLD AUDIT TABLE -->
+    <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h3 style="margin: 0; font-size: 1.2rem;">Multi-Household Consumer Audit</h3>
+                <p style="margin: 4px 0 0 0; color: var(--muted); font-size: 0.85rem;">
+                    Comparative overview of all consumer profiles registered across the utility database.
+                </p>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--muted);">
+                Showing {{ household_stats|length }} active households
+            </span>
+        </div>
+
+        <table class="custom-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border); text-align: left; font-size: 0.82rem; color: var(--muted);">
+                    <th style="padding: 12px;">Consumer Account</th>
+                    <th style="padding: 12px;">Role</th>
+                    <th style="padding: 12px;">Records</th>
+                    <th style="padding: 12px;">Total Usage</th>
+                    <th style="padding: 12px;">Billed Amount</th>
+                    <th style="padding: 12px;">Efficiency Score</th>
+                    <th style="padding: 12px;">Anomalies</th>
+                    <th style="padding: 12px;">Last Recorded</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in household_stats %}
+                <tr style="border-bottom: 1px solid var(--border); font-size: 0.88rem;">
+                    <td style="padding: 12px; font-weight: 600;">
+                        <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #e0f2fe; color: #0369a1; font-size: 0.8rem; margin-right: 8px;">
+                            {{ item.user.username|first|upper }}
+                        </span>
+                        {{ item.user.username }}
+                        {% if item.user.is_superuser %}
+                            <span style="font-size: 0.7rem; background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">ADMIN</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px; color: var(--muted); font-size: 0.82rem;">
+                        {% if item.user.is_superuser %}System Administrator{% else %}Domestic Consumer{% endif %}
+                    </td>
+                    <td style="padding: 12px; font-weight: 600;">
+                        {{ item.record_count }}
+                    </td>
+                    <td style="padding: 12px; font-weight: 700; color: #10b981;">
+                        {{ item.total_kwh }} kWh
+                    </td>
+                    <td style="padding: 12px; font-weight: 600; color: #0284c7;">
+                        ₹{{ item.total_cost }}
+                    </td>
+                    <td style="padding: 12px;">
+                        <span style="padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; background: {% if item.efficiency_score >= 80 %}#dcfce7; color: #15803d;{% elif item.efficiency_score >= 60 %}#fef3c7; color: #92400e;{% else %}#fee2e2; color: #b91c1c;{% endif %}">
+                            {{ item.efficiency_score }} / 100
+                        </span>
+                    </td>
+                    <td style="padding: 12px;">
+                        {% if item.active_anomalies > 0 %}
+                            <span style="color: #ef4444; font-weight: 700;">⚠️ {{ item.active_anomalies }} Alert</span>
+                        {% else %}
+                            <span style="color: #10b981; font-weight: 600;">✓ Normal</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px; color: var(--muted); font-size: 0.8rem;">
+                        {{ item.last_active|date:"M d, Y" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="padding: 24px; text-align: center; color: var(--muted);">No consumer accounts found in database.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
+

@@ -36,15 +36,15 @@ urlpatterns = [
     # Smart Meter Dataset Explorer
     path('dataset/', views.dataset_view, name='dataset'),
 
-    # Authentication
-    path(
-        'login/',
-        auth_views.LoginView.as_view(
-            template_name='registration/login.html',
-            redirect_authenticated_user=True
-        ),
-        name='login'
-    ),
+    # Grid Administrator & Multi-User Analytics Dashboard
+    path('admin-dashboard/', views.admin_dashboard_view, name='admin_dashboard'),
+
+    # Viva Demonstration Instant Persona Switcher
+    path('switch-role/<str:role>/', views.switch_role_view, name='switch_role'),
+
+    # Authentication Portals (Dedicated Consumer & Admin Logins)
+    path('login/', views.consumer_login_view, name='login'),
+    path('admin-login/', views.admin_login_view, name='admin_login'),
     path('register/', views.register, name='register'),
     path('logout/', views.logout_view, name='logout'),
 ]

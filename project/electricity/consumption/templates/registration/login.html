@@ -1,14 +1,71 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | EnergySync</title>
+    <title>Consumer Login | EnergySync</title>
 
-    <link rel="stylesheet"
-          href="{% static 'consumption/css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'consumption/css/login.css' %}">
+    <style>
+        .role-tabs {
+            display: flex;
+            background: rgba(0, 40, 25, 0.06);
+            padding: 4px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            gap: 6px;
+        }
+        .role-tab {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-align: center;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .role-tab.active-consumer {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);
+        }
+        .role-tab.inactive {
+            color: #64748b;
+            background: transparent;
+        }
+        .role-tab.inactive:hover {
+            color: #0f172a;
+            background: rgba(0, 0, 0, 0.04);
+        }
+        .demo-box {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px dashed rgba(16, 185, 129, 0.35);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            margin-bottom: 20px;
+            text-align: left;
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .demo-pill {
+            background: #10b981;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -17,10 +74,28 @@
 
     <div class="login-card">
 
+        <!-- DUAL ROLE TAB SWITCHER -->
+        <div class="role-tabs">
+            <a href="{% url 'login' %}" class="role-tab active-consumer">
+                <span>⚡</span> Consumer Login
+            </a>
+            <a href="{% url 'admin_login' %}" class="role-tab inactive">
+                <span>🛡️</span> Admin Login
+            </a>
+        </div>
+
         <div class="login-icon">⚡</div>
 
-        <h1>Welcome Back!</h1>
-        <p class="subtitle">Login to continue with EnergySync</p>
+        <h1>Domestic Consumer</h1>
+        <p class="subtitle">Smart Meter Analytics & Energy Waste Portal</p>
+
+        <!-- DEMO HELPER BOX -->
+        <div class="demo-box">
+            <div>
+                <strong>Demo Consumer:</strong> <code>demo_user</code> / <code>demo1234</code>
+            </div>
+            <span class="demo-pill" onclick="autoFillConsumer()">Quick Fill</span>
+        </div>
 
         {% if messages %}
             {% for message in messages %}
@@ -28,38 +103,33 @@
             {% endfor %}
         {% endif %}
 
-        <form method="POST">
+        {% if error_message %}
+            <div class="error-message" style="color: #b91c1c; background: #fee2e2; border: 1px solid #f87171; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 18px; text-align: left;">
+                ⚠️ {{ error_message }}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}">
             {% csrf_token %}
 
-            {% if form.non_field_errors %}
-                <div class="error-message">
-                    Invalid username or password.
-                </div>
-            {% endif %}
-
             <div class="form-group">
-                <label for="id_username">Username</label>
-
+                <label for="id_username">Consumer Username / Meter ID</label>
                 <div class="input-box">
                     <span class="input-icon">👤</span>
                     <input
                         type="text"
                         name="username"
                         id="id_username"
-                        placeholder="Enter your username"
+                        placeholder="e.g. demo_user"
                         autocomplete="username"
                         required
                         autofocus
                     >
                 </div>
-                {% for error in form.username.errors %}
-                    <small class="error-message">{{ error }}</small>
-                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label for="id_password">Password</label>
-
                 <div class="input-box">
                     <span class="input-icon">🔒</span>
                     <input
@@ -77,36 +147,37 @@
                         👁
                     </button>
                 </div>
-                {% for error in form.password.errors %}
-                    <small class="error-message">{{ error }}</small>
-                {% endfor %}
             </div>
-
-            <input type="hidden" name="next" value="{{ next }}">
 
             <div class="login-options">
                 <label class="remember-label">
                     <input type="checkbox" name="remember_me">
                     Remember me
                 </label>
-
-                <span class="secure-text">Secure Login</span>
+                <span class="secure-text">Household Portal</span>
             </div>
 
             <button type="submit" class="login-button">
-                Login <span>→</span>
+                Sign In as Consumer <span>→</span>
             </button>
 
         </form>
 
-        <div class="register-link">
-            Don't have an account?
-            <a href="{% url 'register' %}">Create an account</a>
+        <div class="register-link" style="margin-top: 20px;">
+            New Domestic Consumer?
+            <a href="{% url 'register' %}">Register your Smart Meter</a>
+        </div>
+
+        <div style="margin-top: 14px; font-size: 0.82rem; color: #64748b;">
+            Utility Staff or Grid Operator?
+            <a href="{% url 'admin_login' %}" style="color: #d97706; font-weight: 700; text-decoration: none;">
+                Sign in to Admin Portal 🛡️
+            </a>
         </div>
 
         <div class="login-footer">
             <span></span>
-            <p>🌿 Powering a Sustainable Future</p>
+            <p>🌿 Powering Sustainable Households</p>
             <span></span>
         </div>
 
@@ -117,9 +188,12 @@
 <script>
 function togglePassword() {
     const password = document.getElementById("id_password");
+    password.type = password.type === "password" ? "text" : "password";
+}
 
-    password.type =
-        password.type === "password" ? "text" : "password";
+function autoFillConsumer() {
+    document.getElementById("id_username").value = "demo_user";
+    document.getElementById("id_password").value = "demo1234";
 }
 </script>
 

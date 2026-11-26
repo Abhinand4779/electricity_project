@@ -1,0 +1,302 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Administrator Login | EnergySync</title>
+
+    <link rel="stylesheet" href="{% static 'consumption/css/login.css' %}">
+    <style>
+        .login-page-admin {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 40px 6%;
+            background: linear-gradient(135deg, #09131f 0%, #0d2137 60%, #152e4d 100%);
+            background-image: 
+                radial-gradient(at 20% 30%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(2, 132, 199, 0.12) 0px, transparent 50%),
+                linear-gradient(135deg, #09131f 0%, #0d2137 60%, #152e4d 100%);
+        }
+        .admin-card {
+            width: 100%;
+            max-width: 475px;
+            padding: 38px 38px 30px;
+            background: rgba(15, 23, 42, 0.88);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 35px rgba(245, 158, 11, 0.12);
+            text-align: center;
+            backdrop-filter: blur(16px);
+            color: #f1f5f9;
+        }
+        .role-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 4px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            gap: 6px;
+        }
+        .role-tab {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-align: center;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .role-tab.active-admin {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #1e1b4b;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+        }
+        .role-tab.inactive {
+            color: #94a3b8;
+            background: transparent;
+        }
+        .role-tab.inactive:hover {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .admin-icon {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #b45309);
+            color: #0f172a;
+            font-size: 44px;
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+        }
+        .admin-card h1 {
+            color: #f8fafc;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .admin-subtitle {
+            color: #94a3b8;
+            font-size: 15px;
+            margin-bottom: 22px;
+        }
+        .security-badge {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+        }
+        .demo-box-admin {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px dashed rgba(245, 158, 11, 0.45);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            margin-bottom: 20px;
+            text-align: left;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .demo-pill-admin {
+            background: #f59e0b;
+            color: #0f172a;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+        .admin-card .form-group label {
+            color: #cbd5e1;
+        }
+        .admin-card .input-box {
+            background: rgba(30, 41, 59, 0.85);
+            border-color: rgba(148, 163, 184, 0.25);
+        }
+        .admin-card .input-box input {
+            color: #f8fafc;
+        }
+        .admin-card .input-box input::placeholder {
+            color: #64748b;
+        }
+        .admin-btn {
+            width: 100%;
+            height: 54px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #0f172a;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 24px rgba(245, 158, 11, 0.28);
+        }
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(245, 158, 11, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-page-admin">
+
+    <div class="admin-card">
+
+        <!-- DUAL ROLE TAB SWITCHER -->
+        <div class="role-tabs">
+            <a href="{% url 'login' %}" class="role-tab inactive">
+                <span>⚡</span> Consumer Login
+            </a>
+            <a href="{% url 'admin_login' %}" class="role-tab active-admin">
+                <span>🛡️</span> Admin Login
+            </a>
+        </div>
+
+        <div class="admin-icon">🛡️</div>
+
+        <span class="security-badge">
+            Utility & Grid Dispatch Operations
+        </span>
+
+        <h1>Grid Administrator</h1>
+        <p class="admin-subtitle">Executive Multi-Household Energy Management</p>
+
+        <!-- DEMO HELPER BOX -->
+        <div class="demo-box-admin">
+            <div>
+                <strong>Superadmin Demo:</strong> <code>hp</code> / <code>admin123</code>
+            </div>
+            <span class="demo-pill-admin" onclick="autoFillAdmin()">Quick Fill</span>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="success-message" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 16px; font-size: 0.85rem;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if error_message %}
+            <div class="error-message" style="color: #fca5a5; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.45); padding: 11px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 18px; text-align: left; line-height: 1.4;">
+                ⛔ {{ error_message }}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'admin_login' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_admin_username">Administrator Account ID</label>
+                <div class="input-box">
+                    <span class="input-icon">🛡️</span>
+                    <input
+                        type="text"
+                        name="username"
+                        id="id_admin_username"
+                        placeholder="e.g. hp"
+                        autocomplete="username"
+                        required
+                        autofocus
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="id_admin_password">Security Key / Password</label>
+                <div class="input-box">
+                    <span class="input-icon">🔒</span>
+                    <input
+                        type="password"
+                        name="password"
+                        id="id_admin_password"
+                        placeholder="Enter master password"
+                        autocomplete="current-password"
+                        required
+                    >
+                    <button type="button"
+                            class="toggle-password"
+                            onclick="toggleAdminPassword()"
+                            style="color: #94a3b8;"
+                            aria-label="Show password">
+                        👁
+                    </button>
+                </div>
+            </div>
+
+            <div class="login-options" style="margin-bottom: 22px;">
+                <label class="remember-label" style="color: #94a3b8;">
+                    <input type="checkbox" name="remember_me">
+                    Keep session active
+                </label>
+                <span class="secure-text" style="color: #fbbf24;">256-Bit SSL Secured</span>
+            </div>
+
+            <button type="submit" class="admin-btn">
+                Authorize Administrator Access <span>→</span>
+            </button>
+
+        </form>
+
+        <div style="margin-top: 24px; font-size: 0.84rem; color: #94a3b8;">
+            Are you a Domestic Household Consumer?
+            <br>
+            <a href="{% url 'login' %}" style="color: #34d399; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;">
+                <span>⚡</span> Go to Consumer Login Portal
+            </a>
+        </div>
+
+        <div class="login-footer" style="border-top-color: rgba(255, 255, 255, 0.1); margin-top: 24px;">
+            <span></span>
+            <p style="color: #64748b;">⚡ EnergySync Grid Dispatch Suite</p>
+            <span></span>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function toggleAdminPassword() {
+    const password = document.getElementById("id_admin_password");
+    password.type = password.type === "password" ? "text" : "password";
+}
+
+function autoFillAdmin() {
+    document.getElementById("id_admin_username").value = "hp";
+    document.getElementById("id_admin_password").value = "admin123";
+}
+</script>
+
+</body>
+</html>
+

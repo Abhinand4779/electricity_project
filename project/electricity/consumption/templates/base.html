@@ -32,7 +32,23 @@
             </button>
         </div>
 
-        <div class="menu-heading">ANALYTICS & CONTROL</div>
+        {% if request.user.is_staff or request.user.is_superuser %}
+        <div class="menu-heading" style="color: #f59e0b; display: flex; align-items: center; justify-content: space-between;">
+            <span>ADMINISTRATION</span>
+            <span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ADMIN</span>
+        </div>
+
+        <nav class="navigation">
+            <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" style="background: rgba(245, 158, 11, 0.08); font-weight: 600; border-left: 3px solid #f59e0b;">
+                <span>🛡️</span> Grid Admin Overview
+            </a>
+            <a href="/admin/" target="_blank" class="nav-link" title="Django Raw Database Administration">
+                <span>⚙️</span> Django Admin Suite ↗
+            </a>
+        </nav>
+        {% endif %}
+
+        <div class="menu-heading" style="{% if request.user.is_staff or request.user.is_superuser %}margin-top: 18px;{% endif %}">ANALYTICS & CONTROL</div>
 
         <nav class="navigation">
 
@@ -150,16 +166,34 @@
 
             <div class="topbar-right">
 
+                <!-- 1-CLICK DEMO ROLE SWITCHER -->
+                <div style="display: inline-flex; align-items: center; background: rgba(0,0,0,0.06); padding: 4px; border-radius: 10px; border: 1px solid var(--border); gap: 4px;">
+                    <a href="{% url 'switch_role' 'consumer' %}"
+                       title="Switch to Domestic Consumer Dashboard (demo_user)"
+                       style="padding: 5px 12px; border-radius: 7px; font-size: 0.78rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; {% if not request.user.is_superuser %}background: #10b981; color: white; box-shadow: 0 1px 4px rgba(16,185,129,0.3);{% else %}color: var(--muted); background: transparent;{% endif %}">
+                        <span>👤</span> Consumer Side
+                    </a>
+                    <a href="{% url 'switch_role' 'admin' %}"
+                       title="Switch to Grid Administrator Portal (hp)"
+                       style="padding: 5px 12px; border-radius: 7px; font-size: 0.78rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; {% if request.user.is_superuser %}background: #f59e0b; color: white; box-shadow: 0 1px 4px rgba(245,158,11,0.3);{% else %}color: var(--muted); background: transparent;{% endif %}">
+                        <span>🛡️</span> Admin Side
+                    </a>
+                </div>
+
                 <button class="icon-button theme-toggle-btn" id="themeToggle"
                         title="Toggle Dark/Light Mode" aria-label="Toggle theme">☾</button>
 
                 <div class="profile">
                     <div class="profile-text">
                         <strong>{{ request.user.username }}</strong>
-                        <small>Energy Consumer</small>
+                        {% if request.user.is_staff or request.user.is_superuser %}
+                            <small style="color: #d97706; font-weight: 700;">★ Grid Administrator</small>
+                        {% else %}
+                            <small>Energy Consumer</small>
+                        {% endif %}
                     </div>
 
-                    <div class="avatar">
+                    <div class="avatar" style="{% if request.user.is_staff or request.user.is_superuser %}background: #d97706; color: white;{% endif %}">
                         {{ request.user.username|first|upper }}
                     </div>
                 </div>

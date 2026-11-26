@@ -25,3 +25,7 @@ desktop.ini
 
 # Logs
 *.log
+
+# Local Presentation Guide (kept local per user request)
+PPT_PRESENTATION_CONTENT_GUIDE.md
+

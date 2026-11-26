@@ -6,7 +6,8 @@ from datetime import timedelta
 
 import pandas as pd
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -60,6 +61,13 @@ from .advanced_features import (
 @login_required
 def dashboard(request):
     user = request.user
+
+    # Automatic Role-Based Routing:
+    # If an Administrator (staff or superuser) accesses the root URL without explicitly requesting consumer view,
+    # automatically direct them to the Grid Administrator Overview.
+    if (user.is_staff or user.is_superuser) and request.GET.get('view') != 'consumer':
+        return redirect('admin_dashboard')
+
     records = ElectricityConsumption.objects.filter(user=user).order_by('-recorded_at')
     total_records = records.count()
 
@@ -623,7 +631,166 @@ def register(request):
     return render(request, 'registration/register.html', {'form': form})
 
 
+def consumer_login_view(request):
+    """
+    Dedicated Domestic Consumer Login Portal:
+    Strictly handles household consumer authentication and routes to individual home dashboard.
+    """
+    if request.user.is_authenticated:
+        if request.user.is_staff or request.user.is_superuser:
+            return redirect('admin_dashboard')
+        return redirect('dashboard')
+
+    error_message = None
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            if user.is_staff or user.is_superuser:
+                messages.info(request, f"Logged in as Grid Administrator ({user.username}).")
+                return redirect('admin_dashboard')
+            else:
+                messages.success(request, f"Welcome back, {user.username}! Smart meter telemetry active.")
+                return redirect('dashboard')
+        else:
+            error_message = "Invalid consumer credentials. Please check your username and password."
+
+    return render(request, 'registration/login.html', {
+        'error_message': error_message,
+        'active_tab': 'consumer'
+    })
+
+
+def admin_login_view(request):
+    """
+    Dedicated Grid Administrator Login Portal:
+    Restricted to authorized utility engineers and grid operators.
+    Validates staff/superuser role before permitting access to the Grid Administrator Overview.
+    """
+    if request.user.is_authenticated:
+        if request.user.is_staff or request.user.is_superuser:
+            return redirect('admin_dashboard')
+
+    error_message = None
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.is_staff or user.is_superuser:
+                login(request, user)
+                messages.success(request, f"Welcome, Administrator {user.username}. Grid management operations online.")
+                return redirect('admin_dashboard')
+            else:
+                error_message = "Access Denied: This account is a Consumer account and does not have Grid Administrator privileges. Please use the Consumer Login portal."
+        else:
+            error_message = "Invalid administrator credentials. Access restricted to authorized utility operators."
+
+    return render(request, 'registration/login_admin.html', {
+        'error_message': error_message,
+        'active_tab': 'admin'
+    })
+
+
 def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect('login')
+
+
+def switch_role_view(request, role):
+    """
+    Viva Demonstration Role Switcher:
+    Enables examiners and students to switch instantly between Consumer and Admin personas
+    in 1-click without typing passwords.
+    """
+    if role == 'admin':
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user:
+            login(request, admin_user)
+            messages.success(request, "Switched to Administrator Portal (hp): Full Grid & Multi-Household Oversight Active.")
+            return redirect('admin_dashboard')
+    elif role == 'consumer':
+        consumer_user = User.objects.filter(username='demo_user').first() or User.objects.filter(is_superuser=False).first()
+        if consumer_user:
+            login(request, consumer_user)
+            messages.success(request, "Switched to Consumer Dashboard (demo_user): Individual Home AI Tools Active.")
+            return redirect('dashboard')
+
+    return redirect('dashboard')
+
+
+# ========================================================
+# 10. GRID ADMINISTRATOR & MULTI-USER ANALYTICS DASHBOARD
+# ========================================================
+
+@login_required
+def admin_dashboard_view(request):
+    """
+    Central Grid Administrator Dashboard:
+    Aggregates multi-household metrics across the entire database:
+    - Total registered consumers
+    - Total system-wide consumption (kWh) & cost (₹)
+    - Grid peak load factor
+    - System-wide anomaly alert tracking
+    - Comparative Household Performance Audit Table
+    """
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.warning(request, "Access restricted: The Grid Administrator Dashboard is for utility managers. Showing your Consumer Dashboard.")
+        return redirect('dashboard')
+
+    users = User.objects.all().order_by('-date_joined')
+    total_users = users.count()
+    total_records = ElectricityConsumption.objects.count()
+
+    total_kwh_agg = ElectricityConsumption.objects.aggregate(total=Sum('energy_kwh'))['total'] or Decimal('0.000')
+    total_kwh = float(total_kwh_agg)
+    total_cost = round(total_kwh * 8.00, 2)
+    total_carbon = round(total_kwh * 0.82, 2)
+
+    total_anomalies = EnergyAnomaly.objects.count()
+    active_anomalies = EnergyAnomaly.objects.filter(is_resolved=False).count()
+    total_predictions = ConsumptionPrediction.objects.count()
+    total_feedbacks = RecommendationFeedback.objects.count()
+
+    household_stats = []
+    for u in users:
+        u_records = ElectricityConsumption.objects.filter(user=u)
+        u_count = u_records.count()
+        u_kwh_agg = u_records.aggregate(total=Sum('energy_kwh'))['total'] or Decimal('0.000')
+        u_kwh = float(u_kwh_agg)
+        u_active_anom = EnergyAnomaly.objects.filter(user=u, is_resolved=False).count()
+        
+        # Latest efficiency score
+        score_obj = EnergyEfficiencyScore.objects.filter(user=u).order_by('-calculated_at').first()
+        score_val = score_obj.score if score_obj else (85 if u_count > 0 else 0)
+
+        # Last record date
+        last_rec = u_records.order_by('-recorded_at').first()
+        last_active = last_rec.recorded_at if last_rec else u.date_joined
+
+        household_stats.append({
+            'user': u,
+            'record_count': u_count,
+            'total_kwh': round(u_kwh, 2),
+            'total_cost': round(u_kwh * 8.00, 2),
+            'active_anomalies': u_active_anom,
+            'efficiency_score': score_val,
+            'last_active': last_active
+        })
+
+    context = {
+        'total_users': total_users,
+        'total_records': total_records,
+        'total_kwh': round(total_kwh, 2),
+        'total_cost': total_cost,
+        'total_carbon': total_carbon,
+        'total_anomalies': total_anomalies,
+        'active_anomalies': active_anomalies,
+        'total_predictions': total_predictions,
+        'total_feedbacks': total_feedbacks,
+        'household_stats': household_stats
+    }
+    return render(request, 'consumption/admin_dashboard.html', context)
